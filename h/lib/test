@@ -1,0 +1,129 @@
+Widget secondTab() {
+      return SafeArea(
+        child: Scaffold(
+          body: Center(
+            child: name.length == 0
+                ? Text(
+                    "No favorites added yet.",
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Raleway",
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: name.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Dismissible(
+                        background: Container(
+                          color: Colors.red[100],
+                        ),
+                        key: Key(name[index]),
+                        onDismissed: (direction) {
+                          setState(() {
+                            if (direction.toString() ==
+                                "DismissDirection.endToStart") {
+                              print("right to left");
+                            } else
+                              print("left to right");
+                            name.removeAt(index);
+                            link.removeAt(index);
+                            duration.removeAt(index);
+                            complex.removeAt(index);
+                            afford.removeAt(index);
+                          });
+                        },
+                        child: InkWell(
+                          onTap: () {
+                            /*
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MealDetailScreen(
+                                    nextName, nextLink, ingred, steps)),
+                          );
+                          */
+                            print("tapped");
+                          },
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0)),
+                            child: Container(
+                              width: 400,
+                              height: 310,
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(15)),
+                                image: DecorationImage(
+                                  image: NetworkImage("${link[index]}"),
+                                  fit: BoxFit.fitHeight,
+                                  alignment: Alignment.topCenter,
+                                ),
+                              ),
+                              child: Stack(
+                                children: <Widget>[
+                                  Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Container(
+                                      width: 200,
+                                      height: 50,
+                                      color: Colors.black45,
+                                      child: Center(
+                                          child: Text(
+                                        "${name[index]}",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20.0),
+                                      )),
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        color: Colors.white,
+                                      ),
+                                      height: 40,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: <Widget>[
+                                          FlatButton.icon(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.timelapse),
+                                            label:
+                                                Text("${duration[index]} min"),
+                                          ),
+                                          FlatButton.icon(
+                                            onPressed: () {},
+                                            icon: Icon(
+                                              Icons.shopping_bag_sharp,
+                                              color: Colors.black,
+                                            ),
+                                            label: Text("${complex[index]}"),
+                                          ),
+                                          FlatButton.icon(
+                                            onPressed: () {},
+                                            icon: Icon(Icons.attach_money,
+                                                color: Colors.black),
+                                            label: Text("${afford[index]}"),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ),
+      );
+    }
