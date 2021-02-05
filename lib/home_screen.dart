@@ -3,6 +3,7 @@ import 'categoryClass.dart';
 import 'package:flutter/widgets.dart';
 import 'categoryFunctions.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'category_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -302,8 +303,16 @@ class _HomeScreen extends State<HomeScreen> {
                                     color: Color(0xffF1F3F6),
                                     child: ListTile(
                                       // shape: ,
-                                      minVerticalPadding: 20.0,
-                                      onTap: () {},
+                                      //minVerticalPadding: 20.0,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                CategoryScreen(),
+                                          ),
+                                        );
+                                      },
                                       title: Text(
                                         "${list[index].name}",
                                         style: TextStyle(
