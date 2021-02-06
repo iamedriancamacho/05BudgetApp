@@ -11,18 +11,16 @@ class DatabaseConnection {
     return finaldb;
   }
 
-  // _onCreatingDatabase(Database database, int version) async {
-  //   await database.execute(
-  //       "CREATE TABLE categories(id INTEGER PRIMARY KEY, name TEXT, budgetLimit INTEGER, current INTEGER)");
-  // }
-
   _onCreatingDatabase2(Database database, int version) async {
     await database.execute(
         "CREATE TABLE CAT(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, total REAL NOT NULL, max REAL NOT NULL)");
+
+    await database.execute(
+        "CREATE TABLE ITEM(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, datetime TEXT, amount REAL, catID INTEGER)");
   }
 
-  // _onCreatingDatabase3(Database database, int version) async {
-  //   await database.execute(
-  //       "CREATE TABLE ITEM(id INTEGER PRIMARY KEY, name TEXT NOT NULL, date TEXT NOT NULL, amount REAL NOT NULL, FOREIGN KEY(id) REFERENCES CAT(id))");
-  // }
+// _onCreatingDatabase3(Database database, int version) async {
+//   await database.execute(
+//       "CREATE TABLE ITEM(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, date TEXT NOT NULL, amount REAL NOT NULL, FOREIGN KEY(catID) REFERENCES CAT(id))");
+// }
 }

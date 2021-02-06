@@ -3,7 +3,7 @@ import 'package:budget/services/category_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'category_screen.dart';
+import 'item_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -19,20 +19,22 @@ class _HomeScreen extends State<HomeScreen> {
 
   var _category = Category();
   var _categoryService = CategoryService();
+  int catNumber;
 
   List<Category> _categoryList = List<Category>();
-
   @override
   void initState() {
     super.initState();
     getAllCategories();
+    catNumber=100;
+
   }
 
   getAllCategories() async {
     _categoryList = List<Category>();
     var categories = await _categoryService.readCategories();
-    categories.forEach((category) {
-      setState(() {
+    setState(() {
+      categories.forEach((category) {
         var catModel = Category();
         catModel.id = category['id'];
         catModel.name = category['name'];
@@ -117,9 +119,30 @@ class _HomeScreen extends State<HomeScreen> {
                     "SUBMIT",
                     style: TextStyle(fontSize: 17.0),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     // catList.clear();
-                    confirm();
+                    setState(() {
+                      _category.id = catNumber++;
+                      _category.name = catName.text;
+                      _category.total = 50;
+                      _category.max = double.parse(catLimit.text);
+                      var result = _categoryService.saveCategory(_category);
+                      print(result);
+
+                      getAllCategories();
+
+                      // category.add(CategoryClass("1", 1, 1));
+                      // category.name = catName.text;
+                      // category.budgetLimit = int.parse(catLimit.text);
+                      // category.current = 0;
+
+                      // var result = functions.addCategory(category);
+                      // print("db ${result.toString()}");
+                      // Navigator.pop(context);
+                      // progressValue(double.parse(catLimit.text.toString()), 23);
+                      // getCategories();
+                    });
+                    Navigator.pop(context);
                   },
                 ),
               ),
@@ -200,56 +223,13 @@ class _HomeScreen extends State<HomeScreen> {
         });
   }
 
-  void confirm() {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Add Category?"),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("No", style: TextStyle(fontSize: 20.0)),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              FlatButton(
-                child: Text("Yes", style: TextStyle(fontSize: 20.0)),
-                onPressed: () async {
-                  setState(() async {
-                    Navigator.pop(context);
-
-                    _category.name = catName.text;
-                    _category.total = 50;
-                    _category.max = double.parse(catLimit.text);
-                    var result = await _categoryService.saveCategory(_category);
-                    print(result);
-
-                    // category.add(CategoryClass("1", 1, 1));
-                    // category.name = catName.text;
-                    // category.budgetLimit = int.parse(catLimit.text);
-                    // category.current = 0;
-
-                    // var result = functions.addCategory(category);
-                    // print("db ${result.toString()}");
-                    // Navigator.pop(context);
-                    // progressValue(double.parse(catLimit.text.toString()), 23);
-                    // getCategories();
-                  });
-                },
-              ),
-            ],
-          );
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Color(0xffF1F3F6),
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Color(0xffF1F3F6),
           elevation: 0,
           centerTitle: true,
           title: Text(
@@ -336,7 +316,10 @@ class _HomeScreen extends State<HomeScreen> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                CategoryScreen(name: _categoryList[index].name),
+                                                CategoryScreen(
+                                                  catID: _categoryList[index].id,
+                                                    name: _categoryList[index]
+                                                        .name),
                                           ),
                                         );
                                       },
