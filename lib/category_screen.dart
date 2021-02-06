@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class CategoryScreen extends StatefulWidget {
-  // final CategoryScreen category;
+  final String name;
 
-  // CategoryScreen({this.category});
+  CategoryScreen({this.name});
   @override
   _CategoryScreenState createState() => _CategoryScreenState();
 }
@@ -13,7 +13,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("jc"), //widget.categoryClass.name),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text("${widget.name}"),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.add),

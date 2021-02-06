@@ -1,9 +1,7 @@
 import 'package:budget/models/category.dart';
 import 'package:budget/services/category_service.dart';
 import 'package:flutter/material.dart';
-import 'categoryClass.dart';
 import 'package:flutter/widgets.dart';
-import 'categoryFunctions.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'category_screen.dart';
 
@@ -24,12 +22,10 @@ class _HomeScreen extends State<HomeScreen> {
 
   List<Category> _categoryList = List<Category>();
 
-  //var functions = CategoryFunctions();
-
   @override
   void initState() {
     super.initState();
-     // getAllCategories();
+    getAllCategories();
   }
 
   getAllCategories() async {
@@ -40,7 +36,7 @@ class _HomeScreen extends State<HomeScreen> {
         var catModel = Category();
         catModel.id = category['id'];
         catModel.name = category['name'];
-        catModel.total = category['description'];
+        catModel.total = category['total'];
         catModel.max = category['max'];
         _categoryList.add(catModel);
       });
@@ -61,14 +57,14 @@ class _HomeScreen extends State<HomeScreen> {
   //   });
   // }
 
-  Widget progressBar(int current, int limit) {
+  Widget progressBar(double total, double max) {
     return Container(
       padding: EdgeInsets.only(top: 15.0),
       child: LinearPercentIndicator(
         padding: EdgeInsets.only(right: 5.0),
         width: MediaQuery.of(context).size.width / 1.3,
         lineHeight: 8.0,
-        percent: 0,
+        percent: total / max,
         progressColor: Colors.orange,
         backgroundColor: Colors.grey,
       ),
@@ -167,14 +163,14 @@ class _HomeScreen extends State<HomeScreen> {
               FlatButton(
                 color: Colors.green,
                 onPressed: () {
-                  setState(() async {
-                    _category.name = catNameEdit.text;
-                    // category.budgetLimit = int.parse(catLimitEdit.text);
-                    // _category.id = _category[0]['id'];
-                    // var result = await functions.updateCategory(category);
-                    // list.clear();
-                    // getCategories();
-                  });
+                  // setState(() async {
+                  //   _category.name = catNameEdit.text;
+                  //    category.budgetLimit = int.parse(catLimitEdit.text);
+                  //    _category.id = _category[0]['id'];
+                  //    var result = await functions.updateCategory(category);
+                  //    list.clear();
+                  //    getCategories();
+                  // });
                 },
                 child: Text("Update"),
               ),
@@ -221,13 +217,13 @@ class _HomeScreen extends State<HomeScreen> {
               FlatButton(
                 child: Text("Yes", style: TextStyle(fontSize: 20.0)),
                 onPressed: () async {
-                  setState(() {
+                  setState(() async {
                     Navigator.pop(context);
 
                     _category.name = catName.text;
-                    _category.total = 0;
-                    _category.max = int.parse(catLimit.text);
-                    var result = _categoryService.saveCategory(_category);
+                    _category.total = 50;
+                    _category.max = double.parse(catLimit.text);
+                    var result = await _categoryService.saveCategory(_category);
                     print(result);
 
                     // category.add(CategoryClass("1", 1, 1));
@@ -301,7 +297,7 @@ class _HomeScreen extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                catList.length != 0
+                _categoryList.length != 0
                     ? Expanded(
                         child: ListView.builder(
                             padding: EdgeInsets.all(16.0),
@@ -340,35 +336,29 @@ class _HomeScreen extends State<HomeScreen> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                CategoryScreen(),
+                                                CategoryScreen(name: _categoryList[index].name),
                                           ),
                                         );
                                       },
-                                      title: Text(
-                                        "${_categoryList[index].name}",
-                                        style: TextStyle(
-                                            color:
-                                                Theme.of(context).accentColor,
-                                            fontWeight: FontWeight.w400,
-                                            fontSize: 25.0),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                      title: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          progressBar(catList[index].total,
-                                              catList[index].max),
                                           Text(
-                                              "${catList[index].total}/${catList[index].max}"),
+                                            "${_categoryList[index].name}",
+                                            style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .accentColor,
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 25.0),
+                                          ),
+                                          Text(
+                                              "${_categoryList[index].total}/${_categoryList[index].max}"),
                                         ],
                                       ),
-                                      isThreeLine: true,
-
-                                      // trailing: Text(
-                                      //   "${list[index].current}/${list[index].budgetLimit}",
-                                      //   style: TextStyle(
-                                      //       fontWeight: FontWeight.w300),
-                                      // ),
+                                      subtitle: progressBar(
+                                          _categoryList[index].total,
+                                          _categoryList[index].max),
                                     ),
                                   ),
                                 ),

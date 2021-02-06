@@ -1,8 +1,8 @@
 class Category{
   int id;
   String name;
-  int total;
-  int max;
+  double total;
+  double max;
 
   categoryMap() {
     var map = Map<String, dynamic>();
@@ -14,5 +14,3 @@ class Category{
     return map;
   }
 }
-
-List<Category> catList = [];
