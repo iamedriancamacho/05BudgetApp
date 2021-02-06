@@ -17,3 +17,6 @@ class Item {
     return map;
   }
 }
+
+
+int tempID;

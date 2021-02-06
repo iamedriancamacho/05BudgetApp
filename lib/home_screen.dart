@@ -22,21 +22,27 @@ class _HomeScreen extends State<HomeScreen> {
   int catNumber;
 
   List<Category> _categoryList = List<Category>();
+
   @override
   void initState() {
     super.initState();
     getAllCategories();
-    catNumber=100;
-
+    catNumber = 100;
   }
 
   getAllCategories() async {
     _categoryList = List<Category>();
     var categories = await _categoryService.readCategories();
+
     setState(() {
       categories.forEach((category) {
         var catModel = Category();
         catModel.id = category['id'];
+        if (catModel.id == null) catNumber++;
+        else {
+         catModel.id= catNumber++;
+        }
+        print('my ID is ${catModel.id}');
         catModel.name = category['name'];
         catModel.total = category['total'];
         catModel.max = category['max'];
@@ -122,10 +128,11 @@ class _HomeScreen extends State<HomeScreen> {
                   onPressed: () async {
                     // catList.clear();
                     setState(() {
-                      _category.id = catNumber++;
+                      _category.id = catNumber;
                       _category.name = catName.text;
-                      _category.total = 50;
+                      _category.total = 2;
                       _category.max = double.parse(catLimit.text);
+                      //print(_category.id);
                       var result = _categoryService.saveCategory(_category);
                       print(result);
 
@@ -317,7 +324,8 @@ class _HomeScreen extends State<HomeScreen> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 CategoryScreen(
-                                                  catID: _categoryList[index].id,
+                                                    catID:
+                                                        _categoryList[index].id,
                                                     name: _categoryList[index]
                                                         .name),
                                           ),
@@ -339,6 +347,8 @@ class _HomeScreen extends State<HomeScreen> {
                                               "${_categoryList[index].total}/${_categoryList[index].max}"),
                                         ],
                                       ),
+                                      leading: Text('${_categoryList[index].id}'),
+
                                       subtitle: progressBar(
                                           _categoryList[index].total,
                                           _categoryList[index].max),

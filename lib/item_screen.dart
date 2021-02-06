@@ -1,4 +1,3 @@
-import 'package:budget/models/category.dart';
 import 'package:budget/models/item.dart';
 import 'package:budget/services/item_service.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +14,13 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
   List<Item> _itemList = List<Item>();
+  int itemNumber;
 
   @override
   void initState() {
     super.initState();
     getAllItems();
+    itemNumber = 200;
   }
 
   final itemName = TextEditingController();
@@ -33,13 +34,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
     setState(() {
       items.forEach((_item) {
         var itemModel = Item();
-        itemModel.id = _item['id'];
-        itemModel.name = _item['name'];
-        itemModel.datetime = _item['datetime'];
-        itemModel.amount = _item['amount'];
-        itemModel.catID = _item['catID'];
+          itemModel.name = _item['name'];
+          itemModel.datetime = _item['datetime'];
+          itemModel.amount = _item['amount'];
+          itemModel.catID = _item['catID'];
+          itemModel.id = _item['id'];
 
-        _itemList.add(itemModel);
+        if (itemModel.id == null) itemNumber++;
+        else {
+          itemModel.id= itemNumber++;
+        }
+          print('my getAllItems is ${itemModel.id}');
+          _itemList.add(itemModel);
       });
     });
   }
@@ -104,10 +110,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                   onPressed: () async {
                     setState(() {
+
+                      _item.id = itemNumber;
+                      print('my SUBMIT is ${_item.id}');
                       _item.name = itemName.text;
+                      //insert datetime here
                       _item.amount = double.parse(itemAmount.text);
                       _item.catID = widget.catID;
-                      //insert datetime here
 
                       var result = _itemService.saveItem(_item);
                       print(result);
@@ -174,63 +183,63 @@ class _CategoryScreenState extends State<CategoryScreen> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: _itemList.length != 0
-                  ? Expanded(
-                      child: ListView.builder(
-                          padding: EdgeInsets.all(16.0),
-                          shrinkWrap: true,
-                          itemCount: _itemList.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Dismissible(
-                              key: UniqueKey(),
-                              onDismissed: (direction) async {
-                                if (direction.toString() ==
-                                    "DismissDirection.endToStart") {
-                                  //edit(context);
-                                  // getCategories();
-                                } else {
-                                  // var result = await functions
-                                  //     .deleteCategory(list[index].id);
-                                  //
-                                  // list.clear();
-                                  // getCategories();
-                                }
-                              },
-                              child: Container(
-                                height: 110.0,
-                                width: MediaQuery.of(context).size.width,
-                                child: Card(
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15.0),
-                                  ),
-                                  color: Color(0xffF1F3F6),
-                                  child: ListTile(
-                                    // shape: ,
-                                    minVerticalPadding: 20.0,
-                                    onTap: () {},
-                                    title: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          "${_itemList[index].name}",
-                                          style: TextStyle(
-                                              color:
-                                                  Theme.of(context).accentColor,
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 25.0),
-                                        ),
-                                        // Text(
-                                        //     "${_itemList[index].total}/${_categoryList[index].max}"),
-                                      ],
-                                    ),
-                                    subtitle: Text('Date here please ty'),
-                                  ),
-                                ),
+                  ? ListView.builder(
+                      padding: EdgeInsets.all(16.0),
+                      shrinkWrap: true,
+                      itemCount: _itemList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Dismissible(
+                          key: UniqueKey(),
+                          onDismissed: (direction) async {
+                            if (direction.toString() ==
+                                "DismissDirection.endToStart") {
+                              //edit(context);
+                              // getCategories();
+                            } else {
+                              // var result = await functions
+                              //     .deleteCategory(list[index].id);
+                              //
+                              // list.clear();
+                              // getCategories();
+                            }
+                          },
+                          child: Container(
+                            height: 110.0,
+                            width: MediaQuery.of(context).size.width,
+                            child: Card(
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
                               ),
-                            );
-                          }),
-                    )
+                              color: Color(0xffF1F3F6),
+                              child: ListTile(
+                                // shape: ,
+                                minVerticalPadding: 20.0,
+                                onTap: () {},
+                                title: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "${_itemList[index].name}",
+                                      style: TextStyle(
+                                          color: Theme.of(context).accentColor,
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 25.0),
+                                    ),
+                                    // Text(
+                                    //     "${_itemList[index].total}/${_categoryList[index].max}"),
+                                  ],
+                                ),
+                                subtitle: Text('Date here please ty'),
+                                trailing: Text("${_itemList[index].amount}"
+                                ),
+                                leading: Text('${_itemList[index].id}'),
+                              ),
+                            ),
+                          ),
+                        );
+                      })
                   : Text("No Categories Yet!"),
             ),
           ],
