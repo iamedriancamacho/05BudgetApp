@@ -1,3 +1,5 @@
+import 'package:budget/models/category.dart';
+import 'package:budget/services/category_service.dart';
 import 'package:flutter/material.dart';
 import 'categoryClass.dart';
 import 'package:flutter/widgets.dart';
@@ -13,31 +15,51 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreen extends State<HomeScreen> {
   final catName = TextEditingController();
   final catLimit = TextEditingController();
+
   final catNameEdit = TextEditingController();
   final catLimitEdit = TextEditingController();
-  var category = CategoryClass();
-  var functions = CategoryFunctions();
-  var _category;
+
+  var _category = Category();
+  var _categoryService = CategoryService();
+
+  List<Category> _categoryList = List<Category>();
+
+  //var functions = CategoryFunctions();
 
   @override
   void initState() {
     super.initState();
-    getCategories();
+     // getAllCategories();
   }
 
-  getCategories() async {
-    var categories = await functions.readCategory();
-    setState(() {
-      categories.forEach((category) {
-        var catModel = CategoryClass();
-        catModel.name = category['name'];
-        catModel.budgetLimit = category['budgetLimit'];
+  getAllCategories() async {
+    _categoryList = List<Category>();
+    var categories = await _categoryService.readCategories();
+    categories.forEach((category) {
+      setState(() {
+        var catModel = Category();
         catModel.id = category['id'];
-        catModel.current = category['current'];
-        list.add(catModel);
+        catModel.name = category['name'];
+        catModel.total = category['description'];
+        catModel.max = category['max'];
+        _categoryList.add(catModel);
       });
     });
   }
+
+  // getCategories() async {
+  //   var categories = await functions.readCategory();
+  //   setState(() {
+  //     categories.forEach((category) {
+  //       var catModel = CategoryClass();
+  //       catModel.name = category['name'];
+  //       catModel.budgetLimit = category['budgetLimit'];
+  //       catModel.id = category['id'];
+  //       catModel.current = category['current'];
+  //       list.add(catModel);
+  //     });
+  //   });
+  // }
 
   Widget progressBar(int current, int limit) {
     return Container(
@@ -46,7 +68,7 @@ class _HomeScreen extends State<HomeScreen> {
         padding: EdgeInsets.only(right: 5.0),
         width: MediaQuery.of(context).size.width / 1.3,
         lineHeight: 8.0,
-        percent: 0.5,
+        percent: 0,
         progressColor: Colors.orange,
         backgroundColor: Colors.grey,
       ),
@@ -85,7 +107,7 @@ class _HomeScreen extends State<HomeScreen> {
                   controller: catLimit,
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    labelText: "Enter a Budget  Limit",
+                    labelText: "Enter a Budget Limit",
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0)),
                   ),
@@ -100,7 +122,7 @@ class _HomeScreen extends State<HomeScreen> {
                     style: TextStyle(fontSize: 17.0),
                   ),
                   onPressed: () {
-                    list.clear();
+                    // catList.clear();
                     confirm();
                   },
                 ),
@@ -112,14 +134,14 @@ class _HomeScreen extends State<HomeScreen> {
     return Container();
   }
 
-  double progressValue(double limit, double current) {
-    if (limit == 0)
-      perc = 0.0;
-    else {
-      perc = (current / limit) * 90;
-    }
-    return perc;
-  }
+  // double progressValue(double limit, double current) {
+  //   if (limit == 0)
+  //     perc = 0.0;
+  //   else {
+  //     perc = (current / limit) * 90;
+  //   }
+  //   return perc;
+  // }
 
   Widget deleteDesign() {
     return Padding(
@@ -146,12 +168,12 @@ class _HomeScreen extends State<HomeScreen> {
                 color: Colors.green,
                 onPressed: () {
                   setState(() async {
-                    category.name = catNameEdit.text;
-                    category.budgetLimit = int.parse(catLimitEdit.text);
-                    category.id = _category[0]['id'];
-                    var result = await functions.updateCategory(category);
-                    list.clear();
-                    getCategories();
+                    _category.name = catNameEdit.text;
+                    // category.budgetLimit = int.parse(catLimitEdit.text);
+                    // _category.id = _category[0]['id'];
+                    // var result = await functions.updateCategory(category);
+                    // list.clear();
+                    // getCategories();
                   });
                 },
                 child: Text("Update"),
@@ -193,22 +215,31 @@ class _HomeScreen extends State<HomeScreen> {
               FlatButton(
                 child: Text("No", style: TextStyle(fontSize: 20.0)),
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.of(context).pop();
                 },
               ),
               FlatButton(
                 child: Text("Yes", style: TextStyle(fontSize: 20.0)),
                 onPressed: () async {
                   setState(() {
-                    // category.add(CategoryClass("1", 1, 1));
-                    category.name = catName.text;
-                    category.budgetLimit = int.parse(catLimit.text);
-                    category.current = 0;
-                    var result = functions.addCategory(category);
-                    print("db ${result.toString()}");
                     Navigator.pop(context);
-                    progressValue(double.parse(catLimit.text.toString()), 23);
-                    getCategories();
+
+                    _category.name = catName.text;
+                    _category.total = 0;
+                    _category.max = int.parse(catLimit.text);
+                    var result = _categoryService.saveCategory(_category);
+                    print(result);
+
+                    // category.add(CategoryClass("1", 1, 1));
+                    // category.name = catName.text;
+                    // category.budgetLimit = int.parse(catLimit.text);
+                    // category.current = 0;
+
+                    // var result = functions.addCategory(category);
+                    // print("db ${result.toString()}");
+                    // Navigator.pop(context);
+                    // progressValue(double.parse(catLimit.text.toString()), 23);
+                    // getCategories();
                   });
                 },
               ),
@@ -270,12 +301,12 @@ class _HomeScreen extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                list.length != 0
+                catList.length != 0
                     ? Expanded(
                         child: ListView.builder(
                             padding: EdgeInsets.all(16.0),
                             shrinkWrap: true,
-                            itemCount: list.length,
+                            itemCount: _categoryList.length,
                             itemBuilder: (BuildContext context, int index) {
                               return Dismissible(
                                 key: UniqueKey(),
@@ -283,13 +314,13 @@ class _HomeScreen extends State<HomeScreen> {
                                   if (direction.toString() ==
                                       "DismissDirection.endToStart") {
                                     edit(context);
-                                    getCategories();
+                                    // getCategories();
                                   } else {
-                                    var result = await functions
-                                        .deleteCategory(list[index].id);
-
-                                    list.clear();
-                                    getCategories();
+                                    // var result = await functions
+                                    //     .deleteCategory(list[index].id);
+                                    //
+                                    // list.clear();
+                                    // getCategories();
                                   }
                                 },
                                 child: Container(
@@ -303,7 +334,7 @@ class _HomeScreen extends State<HomeScreen> {
                                     color: Color(0xffF1F3F6),
                                     child: ListTile(
                                       // shape: ,
-                                      //minVerticalPadding: 20.0,
+                                      minVerticalPadding: 20.0,
                                       onTap: () {
                                         Navigator.push(
                                           context,
@@ -314,7 +345,7 @@ class _HomeScreen extends State<HomeScreen> {
                                         );
                                       },
                                       title: Text(
-                                        "${list[index].name}",
+                                        "${_categoryList[index].name}",
                                         style: TextStyle(
                                             color:
                                                 Theme.of(context).accentColor,
@@ -325,10 +356,10 @@ class _HomeScreen extends State<HomeScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          progressBar(list[index].current,
-                                              list[index].budgetLimit),
+                                          progressBar(catList[index].total,
+                                              catList[index].max),
                                           Text(
-                                              "${list[index].current}/${list[index].budgetLimit}"),
+                                              "${catList[index].total}/${catList[index].max}"),
                                         ],
                                       ),
                                       isThreeLine: true,
