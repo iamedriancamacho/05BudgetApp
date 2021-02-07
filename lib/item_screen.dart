@@ -1,6 +1,8 @@
 import 'package:budget/models/item.dart';
 import 'package:budget/services/item_service.dart';
 import 'package:flutter/material.dart';
+import 'package:budget/widgets/radial_painter.dart';
+import 'package:budget/helpers/color_helper.dart';
 
 class CategoryScreen extends StatefulWidget {
   final String name;
@@ -34,18 +36,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
     setState(() {
       items.forEach((_item) {
         var itemModel = Item();
-          itemModel.name = _item['name'];
-          itemModel.datetime = _item['datetime'];
-          itemModel.amount = _item['amount'];
-          itemModel.catID = _item['catID'];
-          itemModel.id = _item['id'];
+        itemModel.name = _item['name'];
+        itemModel.datetime = _item['datetime'];
+        itemModel.amount = _item['amount'];
+        itemModel.catID = _item['catID'];
+        itemModel.id = _item['id'];
 
-        if (itemModel.id == null) itemNumber++;
+        if (itemModel.id == null)
+          itemNumber++;
         else {
-          itemModel.id= itemNumber++;
+          itemModel.id = itemNumber++;
         }
-          print('my getAllItems is ${itemModel.id}');
-          _itemList.add(itemModel);
+        print('my getAllItems is ${itemModel.id}');
+        _itemList.add(itemModel);
       });
     });
   }
@@ -110,7 +113,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                   onPressed: () async {
                     setState(() {
-
                       _item.id = itemNumber;
                       print('my SUBMIT is ${_item.id}');
                       _item.name = itemName.text;
@@ -145,104 +147,112 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double totalAmountSpent = 0;
+       totalAmountSpent += expense.cost;
+    final double amountLeft = maxAmount - totalAmountSpent;
+    final double percent = amountLeft / maxAmount;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text("${widget.name}"),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            iconSize: 30.0,
-            onPressed: () {
-              addItem();
-            },
-          )
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.all(20.0),
-              padding: EdgeInsets.all(20.0),
-              height: 250.0,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    offset: Offset(0, 2),
-                    blurRadius: 6.0,
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _itemList.length != 0
-                  ? ListView.builder(
-                      padding: EdgeInsets.all(16.0),
-                      shrinkWrap: true,
-                      itemCount: _itemList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Dismissible(
-                          key: UniqueKey(),
-                          onDismissed: (direction) async {
-                            if (direction.toString() ==
-                                "DismissDirection.endToStart") {
-                              //edit(context);
-                              // getCategories();
-                            } else {
-                              // var result = await functions
-                              //     .deleteCategory(list[index].id);
-                              //
-                              // list.clear();
-                              // getCategories();
-                            }
-                          },
-                          child: Container(
-                            height: 110.0,
-                            width: MediaQuery.of(context).size.width,
-                            child: Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15.0),
-                              ),
-                              color: Color(0xffF1F3F6),
-                              child: ListTile(
-                                // shape: ,
-                                minVerticalPadding: 20.0,
-                                onTap: () {},
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "${_itemList[index].name}",
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 25.0),
-                                    ),
-                                    // Text(
-                                    //     "${_itemList[index].total}/${_categoryList[index].max}"),
-                                  ],
-                                ),
-                                subtitle: Text('Date here please ty'),
-                                trailing: Text("${_itemList[index].amount}"
-                                ),
-                                leading: Text('${_itemList[index].id}'),
-                              ),
-                            ),
-                          ),
-                        );
-                      })
-                  : Text("No Categories Yet!"),
-            ),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text("${widget.name}"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.add),
+              iconSize: 30.0,
+              onPressed: () {
+                addItem();
+              },
+            )
           ],
+        ),
+        body: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+          Container(
+            margin: EdgeInsets.all(20.0),
+            padding: EdgeInsets.all(20.0),
+            height: 250.0,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  offset: Offset(0, 2),
+                  blurRadius: 6.0,
+                ),
+              ],
+            ),
+            child: CustomPaint(
+                foregroundPainter: RadialPainter(
+                  bgColor: Colors.grey[200],
+                  lineColor: getColor(context, percent),
+                  percent: percent,
+                  width: 15.0,
+                ),
+          ),
+    Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: _itemList.length != 0
+          ? ListView.builder(
+              padding: EdgeInsets.all(16.0),
+              shrinkWrap: true,
+              itemCount: _itemList.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Dismissible(
+                  key: UniqueKey(),
+                  onDismissed: (direction) async {
+                    if (direction.toString() == "DismissDirection.endToStart") {
+                      //edit(context);
+                      // getCategories();
+                    } else {
+                      // var result = await functions
+                      //     .deleteCategory(list[index].id);
+                      //
+                      // list.clear();
+                      // getCategories();
+                    }
+                  },
+                  child: Container(
+                    height: 110.0,
+                    width: MediaQuery.of(context).size.width,
+                    child: Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      color: Color(0xffF1F3F6),
+                      child: ListTile(
+                        // shape: ,
+                        //minVerticalPadding: 20.0,
+                        onTap: () {},
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "${_itemList[index].name}",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 25.0),
+                            ),
+                            // Text(
+                            //     "${_itemList[index].total}/${_categoryList[index].max}"),
+                          ],
+                        ),
+                        subtitle: Text('Date here please ty'),
+                        trailing: Text("${_itemList[index].amount}"),
+                        leading: Text('${_itemList[index].id}'),
+                      ),
+                    ),
+                  ),
+                );
+              })
+          : Text("No Categories Yet!"),
+            ),
+          )],
         ),
       ),
     );

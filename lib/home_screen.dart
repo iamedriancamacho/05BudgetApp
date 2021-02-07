@@ -38,9 +38,10 @@ class _HomeScreen extends State<HomeScreen> {
       categories.forEach((category) {
         var catModel = Category();
         catModel.id = category['id'];
-        if (catModel.id == null) catNumber++;
+        if (catModel.id == null)
+          catNumber++;
         else {
-         catModel.id= catNumber++;
+          catModel.id = catNumber++;
         }
         print('my ID is ${catModel.id}');
         catModel.name = category['name'];
@@ -317,7 +318,7 @@ class _HomeScreen extends State<HomeScreen> {
                                     color: Color(0xffF1F3F6),
                                     child: ListTile(
                                       // shape: ,
-                                      minVerticalPadding: 20.0,
+                                      //minVerticalPadding: 20.0,
                                       onTap: () {
                                         Navigator.push(
                                           context,
@@ -347,7 +348,8 @@ class _HomeScreen extends State<HomeScreen> {
                                               "${_categoryList[index].total}/${_categoryList[index].max}"),
                                         ],
                                       ),
-                                      leading: Text('${_categoryList[index].id}'),
+                                      leading:
+                                          Text('${_categoryList[index].id}'),
 
                                       subtitle: progressBar(
                                           _categoryList[index].total,
