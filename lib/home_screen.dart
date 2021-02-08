@@ -27,9 +27,10 @@ class _HomeScreen extends State<HomeScreen> {
   var _category = Category(); //var used for accessing category method
   var _categoryService = CategoryService(); //var used for accessing catService;
   var category; //global var from _editCat
-  int catNumber = 0; //for id
+  int catNumber = 10; //for id
   List<Category> _categoryList = List<Category>(); //list
 
+  final snackBar = SnackBar(content: Text('Updated Successfully'));
   @override
   void initState() {
     super.initState();
@@ -61,16 +62,12 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   Widget progressBar(double total, double max) {
-    return Container(
-      padding: EdgeInsets.only(top: 15.0),
-      child: LinearPercentIndicator(
-        padding: EdgeInsets.only(right: 5.0),
-        width: MediaQuery.of(context).size.width / 1.3,
-        lineHeight: 8.0,
-        percent: total / max,
-        progressColor: Colors.orange,
-        backgroundColor: Colors.grey,
-      ),
+    return LinearPercentIndicator(
+      padding: EdgeInsets.symmetric(vertical: 20.0),
+      lineHeight: 8.0,
+      percent: total / max,
+      progressColor: Colors.orange,
+      backgroundColor: Colors.grey,
     );
   }
 
@@ -169,15 +166,6 @@ class _HomeScreen extends State<HomeScreen> {
   //   return perc;
   // }
 
-  Widget deleteDesign() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        color: Colors.red,
-      ),
-    );
-  }
-
   //this is a method
   _editCategory(
       BuildContext context, categoryID, categoryName, categoryLimit) async {
@@ -204,7 +192,7 @@ class _HomeScreen extends State<HomeScreen> {
                 child: Text("Cancel"),
                 onPressed: () {
                   Navigator.pop(context);
-                  //insert something here
+                  Navigator.pop(context);
                 },
               ),
               FlatButton(
@@ -279,78 +267,87 @@ class _HomeScreen extends State<HomeScreen> {
           ],
         ),
         body: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 20.0),
           child: Column(
             children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
-                  color: Colors.grey[200],
-                ),
-                width: 270.0,
-                height: 250.0,
-                child: Center(
-                  child: Column(
-                    children: <Widget>[
-                      SizedBox(height: 10.0),
-                      Text(
-                        "Weekly Spending",
-                        style: TextStyle(
-                            fontSize: 20.0,
-                            color: Theme.of(context).accentColor),
-                      ),
-                      SizedBox(height: 5.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+              Center(
+                child: Container(
+                  height: 280.0,
+                  width: MediaQuery.of(context).size.width / 1.2,
+                  decoration: BoxDecoration(boxShadow: [
+                    BoxShadow(color: Colors.white, blurRadius: 10.0)
+                  ]),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      color: Colors.grey[200],
+                    ),
+                    width: 270.0,
+                    height: 280.0,
+                    child: Center(
+                      child: Column(
                         children: <Widget>[
-                          IconButton(
-                            icon: Icon(Icons.arrow_back),
-                            iconSize: 30.0,
-                            onPressed: () {},
-                          ),
+                          SizedBox(height: 25.0),
                           Text(
-                            'Feb 10.2020 - Feb 16.2020',
+                            "Weekly Spending",
                             style: TextStyle(
-                                fontFamily: "Jose",
                                 fontSize: 20.0,
                                 color: Theme.of(context).accentColor),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.arrow_forward),
-                            iconSize: 30.0,
-                            onPressed: () {},
+                          SizedBox(height: 10.0),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              IconButton(
+                                icon: Icon(Icons.keyboard_arrow_left),
+                                iconSize: 30.0,
+                                onPressed: () {},
+                              ),
+                              Text(
+                                'Feb 10.2020 - Feb 16.2020',
+                                style: TextStyle(
+                                    fontFamily: "Jose",
+                                    fontSize: 15.0,
+                                    color: Theme.of(context).accentColor),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.keyboard_arrow_right),
+                                iconSize: 30.0,
+                                onPressed: () {},
+                              ),
+                            ],
                           ),
+                          SizedBox(height: 30.0),
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          //   crossAxisAlignment: CrossAxisAlignment.end,
+                          //   children: <Widget>[
+                          //     Bar(
+                          //       label: 'Su',
+                          //     ),
+                          //     Bar(
+                          //       label: 'Mo',
+                          //     ),
+                          //     Bar(
+                          //       label: 'Tu',
+                          //     ),
+                          //     Bar(
+                          //       label: 'We',
+                          //     ),
+                          //     Bar(
+                          //       label: 'Th',
+                          //     ),
+                          //     Bar(
+                          //       label: 'Fr',
+                          //     ),
+                          //     Bar(
+                          //       label: 'Sa',
+                          //     ),
+                          //   ],
+                          // ),
                         ],
                       ),
-                      SizedBox(height: 30.0),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      //   crossAxisAlignment: CrossAxisAlignment.end,
-                      //   children: <Widget>[
-                      //     Bar(
-                      //       label: 'Su',
-                      //     ),
-                      //     Bar(
-                      //       label: 'Mo',
-                      //     ),
-                      //     Bar(
-                      //       label: 'Tu',
-                      //     ),
-                      //     Bar(
-                      //       label: 'We',
-                      //     ),
-                      //     Bar(
-                      //       label: 'Th',
-                      //     ),
-                      //     Bar(
-                      //       label: 'Fr',
-                      //     ),
-                      //     Bar(
-                      //       label: 'Sa',
-                      //     ),
-                      //   ],
-                      // ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -358,19 +355,32 @@ class _HomeScreen extends State<HomeScreen> {
                   ? Expanded(
                       child: ListView.builder(
                           padding: EdgeInsets.symmetric(vertical: 16.0),
-                          //shrinkWrap: true,
                           itemCount: _categoryList.length,
                           itemBuilder: (BuildContext context, int index) {
                             return Dismissible(
-                              background: Container(
-                                padding: EdgeInsets.only(right: 20.0),
-                                color: Colors.orange,
-                                child: Icon(
-                                  Icons.create,
-                                  size: 35.0,
-                                  color: Theme.of(context).accentColor,
+                              background: Center(
+                                child: Container(
+                                  padding: EdgeInsets.only(left: 20.0),
+                                  color: Colors.red,
+                                  child: Icon(
+                                    Icons.delete,
+                                    size: 35.0,
+                                    color: Theme.of(context).accentColor,
+                                  ),
+                                  alignment: Alignment.centerLeft,
                                 ),
-                                alignment: Alignment.centerRight,
+                              ),
+                              secondaryBackground: Center(
+                                child: Container(
+                                  padding: EdgeInsets.only(right: 20.0),
+                                  color: Colors.orange,
+                                  child: Icon(
+                                    Icons.create,
+                                    size: 35.0,
+                                    color: Theme.of(context).accentColor,
+                                  ),
+                                  alignment: Alignment.centerRight,
+                                ),
                               ),
                               key: UniqueKey(),
                               onDismissed: (direction) async {
@@ -384,6 +394,13 @@ class _HomeScreen extends State<HomeScreen> {
                                   // getCategories();
                                   _edit(context);
                                 } else {
+                                  var result = await _categoryService
+                                      .deleteCategory(_categoryList[index].id);
+                                  if (result > 0) {
+                                    print('RESULT is $result');
+                                    //list.clear();
+                                    getAllCategories();
+                                  }
                                   // var result = await functions
                                   //     .deleteCategory(list[index].id);
                                   //
@@ -391,50 +408,57 @@ class _HomeScreen extends State<HomeScreen> {
                                   // getCategories();
                                 }
                               },
-                              child: Card(
-                                child: Card(
-                                  margin: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
-                                 borderOnForeground: true,
-                                  elevation: 10,
-                                  semanticContainer: true,
-                                  shadowColor: Color(0xffF1F3F6),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                  ),
-                                  color: Color(0xffF1F3F6),
-                                  child: ListTile(
-                                    // shape: ,
-                                    //minVerticalPadding: 20.0,
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => CategoryScreen(
-                                              catID: _categoryList[index].id,
-                                              name: _categoryList[index].name),
-                                        ),
-                                      );
-                                    },
-                                    title: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('${_categoryList[index].id}'),
-                                        Text(
-                                          "${_categoryList[index].name}",
-                                          style: TextStyle(
-                                              color:
-                                                  Theme.of(context).accentColor,
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 25.0),
-                                        ),
-                                        Text(
-                                            "${_categoryList[index].total}/${_categoryList[index].max}"),
-                                      ],
+                              child: Center(
+                                child: Container(
+                                  height: 120.0,
+                                  width:
+                                      MediaQuery.of(context).size.width / 1.2,
+                                  decoration: BoxDecoration(boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.white, blurRadius: 10.0)
+                                  ]),
+                                  child: Card(
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.0),
                                     ),
-                                    subtitle: progressBar(
-                                        _categoryList[index].total,
-                                        _categoryList[index].max),
+                                    color: Color(0xffF1F3F6),
+                                    child: ListTile(
+                                      minVerticalPadding: 20.0,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                CategoryScreen(
+                                                    catID:
+                                                        _categoryList[index].id,
+                                                    name: _categoryList[index]
+                                                        .name),
+                                          ),
+                                        );
+                                      },
+                                      title: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text('${_categoryList[index].id}'),
+                                          Text(
+                                            "${_categoryList[index].name}",
+                                            style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .accentColor,
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 25.0),
+                                          ),
+                                          Text(
+                                              "${_categoryList[index].total}/${_categoryList[index].max}"),
+                                        ],
+                                      ),
+                                      subtitle: progressBar(
+                                          _categoryList[index].total,
+                                          _categoryList[index].max),
+                                    ),
                                   ),
                                 ),
                               ),

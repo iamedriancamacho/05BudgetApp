@@ -20,7 +20,6 @@ class CategoryService {
   //read data from table
   readCategories() async {
    return await _rep.readData('CAT');
-
   }
 
   //read data from table by ID
@@ -30,6 +29,10 @@ class CategoryService {
 
   updateCategory(Category category) async{
     return await _rep.updateData('CAT', category.categoryMap());
+  }
+
+  deleteCategory(categoryID) async{
+    return await _rep.deleteDataByID('CAT', categoryID);
   }
 
 }
