@@ -27,14 +27,13 @@ class _HomeScreen extends State<HomeScreen> {
   var _category = Category(); //var used for accessing category method
   var _categoryService = CategoryService(); //var used for accessing catService;
   var category; //global var from _editCat
-  int catNumber; //for id
+  int catNumber = 0; //for id
   List<Category> _categoryList = List<Category>(); //list
 
   @override
   void initState() {
     super.initState();
     getAllCategories();
-    catNumber = 0;
   }
 
   getAllCategories() async {
@@ -45,10 +44,12 @@ class _HomeScreen extends State<HomeScreen> {
       categories.forEach((category) {
         var catModel = Category();
         catModel.id = category['id'];
-        if (catModel.id == null)
+        if (catModel.id == null) {
+          print('nisulod sa if catModel.id ==null');
           catNumber++;
-        else {
-          catModel.id = catNumber++;
+        } else {
+          print('nisulod sa else');
+          catModel.id = category['id'];
         }
         print('my ID is ${catModel.id}');
         catModel.name = category['name'];
@@ -121,28 +122,33 @@ class _HomeScreen extends State<HomeScreen> {
                   ),
                   onPressed: () async {
                     // catList.clear();
-                    setState(() {
-                      _category.id = catNumber;
-                      _category.name = catName.text;
-                      _category.total = 2;
-                      _category.max = double.parse(catLimit.text);
-                      //print(_category.id);
-                      var result = _categoryService.saveCategory(_category);
-                      print(result);
+                    //for checking
+                    int temp=0;
+                    var categories = await _categoryService.readCategories();
+                      categories.forEach((category) {
+                       temp++;
+                      });
 
-                      getAllCategories();
+                    //end of checking
+                    _category.id = temp++;
+                    _category.name = catName.text;
+                    _category.total = 2;
+                    _category.max = double.parse(catLimit.text);
+                    //print(_category.id);
+                    var result = await _categoryService.saveCategory(_category);
+                    print(result);
+                    getAllCategories();
 
-                      // category.add(CategoryClass("1", 1, 1));
-                      // category.name = catName.text;
-                      // category.budgetLimit = int.parse(catLimit.text);
-                      // category.current = 0;
+                    // category.add(CategoryClass("1", 1, 1));
+                    // category.name = catName.text;
+                    // category.budgetLimit = int.parse(catLimit.text);
+                    // category.current = 0;
 
-                      // var result = functions.addCategory(category);
-                      // print("db ${result.toString()}");
-                      // Navigator.pop(context);
-                      // progressValue(double.parse(catLimit.text.toString()), 23);
-                      // getCategories();
-                    });
+                    // var result = functions.addCategory(category);
+                    // print("db ${result.toString()}");
+                    // Navigator.pop(context);
+                    // progressValue(double.parse(catLimit.text.toString()), 23);
+                    // getCategories();
                     Navigator.pop(context);
                   },
                 ),
@@ -202,18 +208,23 @@ class _HomeScreen extends State<HomeScreen> {
                 },
               ),
               FlatButton(
-                color: Colors.green,
-                onPressed: () {
-                  // setState(() async {
-                  //   _category.name = catNameEdit.text;
-                  //    category.budgetLimit = int.parse(catLimitEdit.text);
-                  //    //_category.id = _category[0]['id'];
-                  //    //var result = await functions.updateCategory(category);
-                  //    //list.clear();
-                  //    //getCategories();
-                  // });
-                },
                 child: Text("Update"),
+                color: Colors.green,
+                onPressed: () async {
+                  _category.id = category[0]['id'];
+                  _category.name = catNameEdit.text;
+                  _category.total = 0;
+                  _category.max = double.parse(catLimitEdit.text);
+
+                  var result = await _categoryService.updateCategory(_category);
+                  if (result > 0) {
+                    print('RESULT is $result');
+                    Navigator.pop(context);
+                    Navigator.pop(context); //idk ngano duha ka pop HUHUHU
+                    //list.clear();
+                    getAllCategories();
+                  }
+                },
               ),
             ],
             title: Text("Edit Category"),
@@ -314,33 +325,33 @@ class _HomeScreen extends State<HomeScreen> {
                           ],
                         ),
                         SizedBox(height: 30.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: <Widget>[
-                            Bar(
-                              label: 'Su',
-                            ),
-                            Bar(
-                              label: 'Mo',
-                            ),
-                            Bar(
-                              label: 'Tu',
-                            ),
-                            Bar(
-                              label: 'We',
-                            ),
-                            Bar(
-                              label: 'Th',
-                            ),
-                            Bar(
-                              label: 'Fr',
-                            ),
-                            Bar(
-                              label: 'Sa',
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        //   crossAxisAlignment: CrossAxisAlignment.end,
+                        //   children: <Widget>[
+                        //     Bar(
+                        //       label: 'Su',
+                        //     ),
+                        //     Bar(
+                        //       label: 'Mo',
+                        //     ),
+                        //     Bar(
+                        //       label: 'Tu',
+                        //     ),
+                        //     Bar(
+                        //       label: 'We',
+                        //     ),
+                        //     Bar(
+                        //       label: 'Th',
+                        //     ),
+                        //     Bar(
+                        //       label: 'Fr',
+                        //     ),
+                        //     Bar(
+                        //       label: 'Sa',
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                   ),
@@ -413,8 +424,8 @@ class _HomeScreen extends State<HomeScreen> {
                                               "${_categoryList[index].total}/${_categoryList[index].max}"),
                                         ],
                                       ),
-                                      // leading:
-                                      //     Text('${_categoryList[index].id}'),
+                                      leading:
+                                          Text('${_categoryList[index].id}'),
 
                                       subtitle: progressBar(
                                           _categoryList[index].total,

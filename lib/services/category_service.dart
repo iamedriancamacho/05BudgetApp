@@ -28,5 +28,8 @@ class CategoryService {
     return await _rep.readDataByID('CAT', categoryID);
   }
 
+  updateCategory(Category category) async{
+    return await _rep.updateData('CAT', category.categoryMap());
+  }
 
 }

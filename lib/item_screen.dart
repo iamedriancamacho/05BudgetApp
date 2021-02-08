@@ -148,7 +148,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   Widget build(BuildContext context) {
     double totalAmountSpent = 0;
-    totalAmountSpent += expense.cost;
+    // totalAmountSpent += expense.cost;
+    totalAmountSpent += 0;
+    var maxAmount = 0;
     final double amountLeft = maxAmount - totalAmountSpent;
     final double percent = amountLeft / maxAmount;
     return Scaffold(
