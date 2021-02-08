@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 class Category{
   int id;
   String name;
@@ -14,3 +16,13 @@ class Category{
     return map;
   }
 }
+
+List<Category> categoryList = List<Category>(); //list
+
+//textfields
+final catName = TextEditingController();
+final catLimit = TextEditingController();
+
+//edit textfields
+final catNameEdit = TextEditingController();
+final catLimitEdit = TextEditingController();

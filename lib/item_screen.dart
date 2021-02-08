@@ -15,14 +15,6 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
-  List<Item> _itemList = List<Item>();
-
-  final itemName = TextEditingController();
-  final itemAmount = TextEditingController();
-
-  final itemNameEdit = TextEditingController();
-  final itemLimitEdit = TextEditingController();
-
   var _item = Item();
   var _itemService = ItemService();
   var item;
@@ -35,7 +27,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   getAllItems() async {
-    _itemList = List<Item>();
+    itemList = List<Item>();
     var items = await _itemService.readItem();
 
     setState(() {
@@ -47,8 +39,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
         itemModel.amount = category['amount'];
         itemModel.catID = category['catID'];
         //checks if catID is correct
-        if(itemModel.catID== widget.catID){
-          _itemList.add(itemModel);
+        if (itemModel.catID == widget.catID) {
+          itemList.add(itemModel);
         }
       });
     });
@@ -66,6 +58,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
           return Column(
             children: <Widget>[
               SizedBox(height: 40.0),
+              Text(
+                'Add Item',
+                style: TextStyle(
+                    color: Theme.of(context).accentColor,
+                    fontFamily: 'Josefin',
+                    fontSize: 20.0),
+              ),
+              SizedBox(height: 20.0),
               Container(
                 width: 300,
                 child: TextField(
@@ -126,20 +126,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     _item.datetime = 'insert datetime here';
                     _item.catID = widget.catID;
 
-                    var result = await _itemService.saveItem(_item);
+                    var result = await itemService.saveItem(_item);
                     print(result);
                     getAllItems();
-
-                    // category.add(CategoryClass("1", 1, 1));
-                    // category.name = catName.text;
-                    // category.budgetLimit = int.parse(catLimit.text);
-                    // category.current = 0;
-
-                    // var result = functions.addCategory(category);
-                    // print("db ${result.toString()}");
-                    // Navigator.pop(context);
-                    // progressValue(double.parse(catLimit.text.toString()), 23);
-                    // getCategories();
                     Navigator.pop(context);
                   },
                 ),
@@ -251,12 +240,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
           child: Center(
             child: Column(
               children: <Widget>[
-
                 Container(
-                  //margin: EdgeInsets.all(20.0),
+                  margin: EdgeInsets.all(20.0),
                   padding: EdgeInsets.all(20.0),
                   height: 250.0,
-                  //width: double.infinity,
+                  width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10.0),
@@ -277,11 +265,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     ),
                   ),
                 ),
-                _itemList.length != 0
+                itemList.length != 0
                     ? Expanded(
                         child: ListView.builder(
                             padding: EdgeInsets.symmetric(vertical: 16.0),
-                            itemCount: _itemList.length,
+                            itemCount: itemList.length,
                             itemBuilder: (BuildContext context, int index) {
                               return Dismissible(
                                 background: Center(
@@ -314,26 +302,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                       "DismissDirection.endToStart") {
                                     _editList(
                                         context,
-                                        _itemList[index].id,
-                                        _itemList[index].name,
-                                        _itemList[index].amount);
+                                        itemList[index].id,
+                                        itemList[index].name,
+                                        itemList[index].amount);
 
                                     _editL(context);
                                   } else {
                                     var result = await _itemService
-                                        .deleteCategory(_itemList[index].id);
+                                        .deleteCategory(itemList[index].id);
                                     if (result > 0) {
                                       print('RESULT is $result');
-                                      //list.clear();
+
                                       getAllItems();
                                     }
-                                    // var result = await _itemService
-                                    //     .deleteCategory(_itemList[index].id);
-                                    // if (result > 0) {
-                                    //   print('RESULT is $result');
-                                    //   //list.clear();
-                                    //   getAllItems();
-                                    // }
                                   }
                                 },
                                 child: Center(
@@ -348,24 +329,27 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                     child: Card(
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20.0),
+                                        borderRadius:
+                                            BorderRadius.circular(20.0),
                                       ),
                                       color: Color(0xffF1F3F6),
                                       child: ListTile(
                                         minVerticalPadding: 20.0,
                                         title: Text(
-                                          "${_itemList[index].name}",
+                                          "${itemList[index].name}",
                                           style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .accentColor,
+                                              color:
+                                                  Theme.of(context).accentColor,
                                               fontWeight: FontWeight.w400,
                                               fontSize: 25.0),
                                         ),
-                                        leading: Text('${_itemList[index].id}'),
-                                        subtitle: Text('categoryID: ${_itemList[index].catID} \n*dapat datetime ni sha*'),
+                                        leading: Text('${itemList[index].id}'),
+                                        subtitle: Text(
+                                            'categoryID: ${itemList[index].catID} \n*dapat datetime ni sha*'),
                                         trailing: Text(
-                                            " -\$ ${_itemList[index].amount}",
-                                            style: TextStyle(color: Colors.red)),
+                                            " -₱ ${itemList[index].amount}",
+                                            style:
+                                                TextStyle(color: Colors.red)),
                                       ),
                                     ),
                                   ),
