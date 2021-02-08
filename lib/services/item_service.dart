@@ -1,4 +1,3 @@
-import 'package:budget/models/category.dart';
 import 'package:budget/models/item.dart';
 import 'package:budget/repositories/repository.dart';
 
@@ -16,12 +15,11 @@ class ItemService {
     print(item.datetime);
     print(item.amount);
     print(item.catID);
-    return await _rep.insertData('ITEM', item.ItemMap());
+    return await _rep.insertData('ITEM', item.itemMap());
   }
 
   //read data from table
   readItem() async {
     return await _rep.readData('ITEM');
-
   }
 }

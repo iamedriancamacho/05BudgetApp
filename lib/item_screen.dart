@@ -230,23 +230,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 // shape: ,
                                 //minVerticalPadding: 20.0,
                                 onTap: () {},
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "${_itemList[index].name}",
-                                      style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 25.0),
-                                    ),
-                                    // Text(
-                                    //     "${_itemList[index].total}/${_categoryList[index].max}"),
-                                  ],
+                                title: Text(
+                                  "${_itemList[index].name}",
+                                  style: TextStyle(
+                                      color: Theme.of(context).accentColor,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 25.0),
                                 ),
                                 subtitle: Text('Date here please ty'),
-                                trailing: Text("${_itemList[index].amount}"),
+                                trailing: Text(
+                                  "-\$ ${_itemList[index].amount}",
+                                  style: TextStyle(color: Colors.red),
+                                ),
                                 leading: Text('${_itemList[index].id}'),
                               ),
                             ),
