@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'item_screen.dart';
+import 'package:flutter/cupertino.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -269,7 +270,6 @@ class _HomeScreen extends State<HomeScreen> {
                   ),
                   width: 270.0,
                   height: 250.0,
-                  //
                   child: Center(
                     child: Column(
                       children: <Widget>[
@@ -280,6 +280,57 @@ class _HomeScreen extends State<HomeScreen> {
                               fontFamily: "Jose",
                               fontSize: 20.0,
                               color: Theme.of(context).accentColor),
+                        ),
+                        SizedBox(height: 5.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            IconButton(
+                              icon: Icon(Icons.arrow_back),
+                              iconSize: 30.0,
+                              onPressed: () {},
+                            ),
+                            Text(
+                              'Feb 10.2020 - Feb 16.2020',
+                              style: TextStyle(
+                                  fontFamily: "Jose",
+                                  fontSize: 20.0,
+                                  color: Theme.of(context).accentColor),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.arrow_forward),
+                              iconSize: 30.0,
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 30.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Bar(
+                              label: 'Su',
+                            ),
+                            Bar(
+                              label: 'Mo',
+                            ),
+                            Bar(
+                              label: 'Tu',
+                            ),
+                            Bar(
+                              label: 'We',
+                            ),
+                            Bar(
+                              label: 'Th',
+                            ),
+                            Bar(
+                              label: 'Fr',
+                            ),
+                            Bar(
+                              label: 'Sa',
+                            ),
+                          ],
                         ),
                       ],
                     ),
