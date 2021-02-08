@@ -45,7 +45,7 @@ class _HomeScreen extends State<HomeScreen> {
         var catModel = Category();
         catModel.id = category['id'];
         if (catModel.id == null) {
-          print('nisulod sa if catModel.id ==null');
+          print('nisulod sa if catModel.id == null');
           catNumber++;
         } else {
           print('nisulod sa else');
@@ -123,11 +123,11 @@ class _HomeScreen extends State<HomeScreen> {
                   onPressed: () async {
                     // catList.clear();
                     //for checking
-                    int temp=0;
+                    int temp = 0;
                     var categories = await _categoryService.readCategories();
-                      categories.forEach((category) {
-                       temp++;
-                      });
+                    categories.forEach((category) {
+                      temp++;
+                    });
 
                     //end of checking
                     _category.id = temp++;
@@ -279,166 +279,170 @@ class _HomeScreen extends State<HomeScreen> {
           ],
         ),
         body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(
-            child: Column(
-              children: <Widget>[
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                    color: Colors.grey[200],
-                  ),
-                  width: 270.0,
-                  height: 250.0,
-                  child: Center(
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(height: 10.0),
-                        Text(
-                          "Weekly Spending",
-                          style: TextStyle(
-                              fontFamily: "Jose",
-                              fontSize: 20.0,
-                              color: Theme.of(context).accentColor),
-                        ),
-                        SizedBox(height: 5.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            IconButton(
-                              icon: Icon(Icons.arrow_back),
-                              iconSize: 30.0,
-                              onPressed: () {},
-                            ),
-                            Text(
-                              'Feb 10.2020 - Feb 16.2020',
-                              style: TextStyle(
-                                  fontFamily: "Jose",
-                                  fontSize: 20.0,
-                                  color: Theme.of(context).accentColor),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.arrow_forward),
-                              iconSize: 30.0,
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 30.0),
-                        // Row(
-                        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        //   crossAxisAlignment: CrossAxisAlignment.end,
-                        //   children: <Widget>[
-                        //     Bar(
-                        //       label: 'Su',
-                        //     ),
-                        //     Bar(
-                        //       label: 'Mo',
-                        //     ),
-                        //     Bar(
-                        //       label: 'Tu',
-                        //     ),
-                        //     Bar(
-                        //       label: 'We',
-                        //     ),
-                        //     Bar(
-                        //       label: 'Th',
-                        //     ),
-                        //     Bar(
-                        //       label: 'Fr',
-                        //     ),
-                        //     Bar(
-                        //       label: 'Sa',
-                        //     ),
-                        //   ],
-                        // ),
-                      ],
-                    ),
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            children: <Widget>[
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                  color: Colors.grey[200],
+                ),
+                width: 270.0,
+                height: 250.0,
+                child: Center(
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(height: 10.0),
+                      Text(
+                        "Weekly Spending",
+                        style: TextStyle(
+                            fontSize: 20.0,
+                            color: Theme.of(context).accentColor),
+                      ),
+                      SizedBox(height: 5.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          IconButton(
+                            icon: Icon(Icons.arrow_back),
+                            iconSize: 30.0,
+                            onPressed: () {},
+                          ),
+                          Text(
+                            'Feb 10.2020 - Feb 16.2020',
+                            style: TextStyle(
+                                fontFamily: "Jose",
+                                fontSize: 20.0,
+                                color: Theme.of(context).accentColor),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.arrow_forward),
+                            iconSize: 30.0,
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 30.0),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      //   crossAxisAlignment: CrossAxisAlignment.end,
+                      //   children: <Widget>[
+                      //     Bar(
+                      //       label: 'Su',
+                      //     ),
+                      //     Bar(
+                      //       label: 'Mo',
+                      //     ),
+                      //     Bar(
+                      //       label: 'Tu',
+                      //     ),
+                      //     Bar(
+                      //       label: 'We',
+                      //     ),
+                      //     Bar(
+                      //       label: 'Th',
+                      //     ),
+                      //     Bar(
+                      //       label: 'Fr',
+                      //     ),
+                      //     Bar(
+                      //       label: 'Sa',
+                      //     ),
+                      //   ],
+                      // ),
+                    ],
                   ),
                 ),
-                _categoryList.length != 0
-                    ? Expanded(
-                        child: ListView.builder(
-                            padding: EdgeInsets.all(16.0),
-                            //shrinkWrap: true,
-                            itemCount: _categoryList.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return Dismissible(
-                                key: UniqueKey(),
-                                onDismissed: (direction) async {
-                                  if (direction.toString() ==
-                                      "DismissDirection.endToStart") {
-                                    _editCategory(
+              ),
+              _categoryList.length != 0
+                  ? Expanded(
+                      child: ListView.builder(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          //shrinkWrap: true,
+                          itemCount: _categoryList.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Dismissible(
+                              background: Container(
+                                padding: EdgeInsets.only(right: 20.0),
+                                color: Colors.orange,
+                                child: Icon(
+                                  Icons.create,
+                                  size: 35.0,
+                                  color: Theme.of(context).accentColor,
+                                ),
+                                alignment: Alignment.centerRight,
+                              ),
+                              key: UniqueKey(),
+                              onDismissed: (direction) async {
+                                if (direction.toString() ==
+                                    "DismissDirection.endToStart") {
+                                  _editCategory(
+                                      context,
+                                      _categoryList[index].id,
+                                      _categoryList[index].name,
+                                      _categoryList[index].max);
+                                  // getCategories();
+                                  _edit(context);
+                                } else {
+                                  // var result = await functions
+                                  //     .deleteCategory(list[index].id);
+                                  //
+                                  // list.clear();
+                                  // getCategories();
+                                }
+                              },
+                              child: Card(
+                                child: Card(
+                                  margin: EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+                                 borderOnForeground: true,
+                                  elevation: 10,
+                                  semanticContainer: true,
+                                  shadowColor: Color(0xffF1F3F6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                  ),
+                                  color: Color(0xffF1F3F6),
+                                  child: ListTile(
+                                    // shape: ,
+                                    //minVerticalPadding: 20.0,
+                                    onTap: () {
+                                      Navigator.push(
                                         context,
-                                        _categoryList[index].id,
-                                        _categoryList[index].name,
-                                        _categoryList[index].max);
-                                    // getCategories();
-                                    _edit(context);
-                                  } else {
-                                    // var result = await functions
-                                    //     .deleteCategory(list[index].id);
-                                    //
-                                    // list.clear();
-                                    // getCategories();
-                                  }
-                                },
-                                child: Container(
-                                  height: 110.0,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: Card(
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15.0),
+                                        MaterialPageRoute(
+                                          builder: (context) => CategoryScreen(
+                                              catID: _categoryList[index].id,
+                                              name: _categoryList[index].name),
+                                        ),
+                                      );
+                                    },
+                                    title: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('${_categoryList[index].id}'),
+                                        Text(
+                                          "${_categoryList[index].name}",
+                                          style: TextStyle(
+                                              color:
+                                                  Theme.of(context).accentColor,
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 25.0),
+                                        ),
+                                        Text(
+                                            "${_categoryList[index].total}/${_categoryList[index].max}"),
+                                      ],
                                     ),
-                                    color: Color(0xffF1F3F6),
-                                    child: ListTile(
-                                      // shape: ,
-                                      //minVerticalPadding: 20.0,
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                CategoryScreen(
-                                                    catID:
-                                                        _categoryList[index].id,
-                                                    name: _categoryList[index]
-                                                        .name),
-                                          ),
-                                        );
-                                      },
-                                      title: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            "${_categoryList[index].name}",
-                                            style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .accentColor,
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 25.0),
-                                          ),
-                                          Text(
-                                              "${_categoryList[index].total}/${_categoryList[index].max}"),
-                                        ],
-                                      ),
-                                      leading:
-                                          Text('${_categoryList[index].id}'),
-
-                                      subtitle: progressBar(
-                                          _categoryList[index].total,
-                                          _categoryList[index].max),
-                                    ),
+                                    subtitle: progressBar(
+                                        _categoryList[index].total,
+                                        _categoryList[index].max),
                                   ),
                                 ),
-                              );
-                            }),
-                      )
-                    : Text("No Categories Yet!")
-              ],
-            ),
+                              ),
+                            );
+                          }),
+                    )
+                  : Text("No Categories Yet!")
+            ],
           ),
         ),
       ),
