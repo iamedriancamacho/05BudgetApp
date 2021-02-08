@@ -1,6 +1,8 @@
 import 'package:budget/models/item.dart';
 import 'package:budget/services/item_service.dart';
 import 'package:flutter/material.dart';
+import 'package:budget/widgets/radial_painter.dart';
+import 'package:budget/helpers/color_helper.dart';
 
 class CategoryScreen extends StatefulWidget {
   final String name;
@@ -145,6 +147,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double totalAmountSpent = 0;
+    totalAmountSpent += expense.cost;
+    final double amountLeft = maxAmount - totalAmountSpent;
+    final double percent = amountLeft / maxAmount;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -178,6 +184,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     blurRadius: 6.0,
                   ),
                 ],
+              ),
+              child: CustomPaint(
+                foregroundPainter: RadialPainter(
+                  bgColor: Colors.grey[200],
+                  lineColor: getColor(context, percent),
+                  percent: percent,
+                  width: 15.0,
+                ),
               ),
             ),
             Padding(
@@ -214,7 +228,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               color: Color(0xffF1F3F6),
                               child: ListTile(
                                 // shape: ,
-                                minVerticalPadding: 20.0,
+                                //minVerticalPadding: 20.0,
                                 onTap: () {},
                                 title: Text(
                                   "${_itemList[index].name}",
