@@ -1,9 +1,10 @@
+import 'package:budget/models/category.dart';
+import 'package:budget/services/category_service.dart';
 import 'package:flutter/material.dart';
-import 'categoryClass.dart';
 import 'package:flutter/widgets.dart';
-import 'categoryFunctions.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'category_screen.dart';
+import 'item_screen.dart';
+import 'package:flutter/cupertino.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -13,40 +14,67 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreen extends State<HomeScreen> {
   final catName = TextEditingController();
   final catLimit = TextEditingController();
+
   final catNameEdit = TextEditingController();
   final catLimitEdit = TextEditingController();
-  var category = CategoryClass();
-  var functions = CategoryFunctions();
-  var _category;
+
+  var _category = Category();
+  var _categoryService = CategoryService();
+  int catNumber;
+
+  List<Category> _categoryList = List<Category>();
 
   @override
   void initState() {
     super.initState();
-    getCategories();
+    getAllCategories();
+    catNumber = 100;
   }
 
-  getCategories() async {
-    var categories = await functions.readCategory();
+  getAllCategories() async {
+    _categoryList = List<Category>();
+    var categories = await _categoryService.readCategories();
+
     setState(() {
       categories.forEach((category) {
-        var catModel = CategoryClass();
-        catModel.name = category['name'];
-        catModel.budgetLimit = category['budgetLimit'];
+        var catModel = Category();
         catModel.id = category['id'];
-        catModel.current = category['current'];
-        list.add(catModel);
+        if (catModel.id == null)
+          catNumber++;
+        else {
+          catModel.id = catNumber++;
+        }
+        print('my ID is ${catModel.id}');
+        catModel.name = category['name'];
+        catModel.total = category['total'];
+        catModel.max = category['max'];
+        _categoryList.add(catModel);
       });
     });
   }
 
-  Widget progressBar(int current, int limit) {
+  // getCategories() async {
+  //   var categories = await functions.readCategory();
+  //   setState(() {
+  //     categories.forEach((category) {
+  //       var catModel = CategoryClass();
+  //       catModel.name = category['name'];
+  //       catModel.budgetLimit = category['budgetLimit'];
+  //       catModel.id = category['id'];
+  //       catModel.current = category['current'];
+  //       list.add(catModel);
+  //     });
+  //   });
+  // }
+
+  Widget progressBar(double total, double max) {
     return Container(
       padding: EdgeInsets.only(top: 15.0),
       child: LinearPercentIndicator(
         padding: EdgeInsets.only(right: 5.0),
         width: MediaQuery.of(context).size.width / 1.3,
         lineHeight: 8.0,
-        percent: 0.5,
+        percent: total / max,
         progressColor: Colors.orange,
         backgroundColor: Colors.grey,
       ),
@@ -85,7 +113,7 @@ class _HomeScreen extends State<HomeScreen> {
                   controller: catLimit,
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    labelText: "Enter a Budget  Limit",
+                    labelText: "Enter a Budget Limit",
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0)),
                   ),
@@ -99,9 +127,31 @@ class _HomeScreen extends State<HomeScreen> {
                     "SUBMIT",
                     style: TextStyle(fontSize: 17.0),
                   ),
-                  onPressed: () {
-                    list.clear();
-                    confirm();
+                  onPressed: () async {
+                    // catList.clear();
+                    setState(() {
+                      _category.id = catNumber;
+                      _category.name = catName.text;
+                      _category.total = 2;
+                      _category.max = double.parse(catLimit.text);
+                      //print(_category.id);
+                      var result = _categoryService.saveCategory(_category);
+                      print(result);
+
+                      getAllCategories();
+
+                      // category.add(CategoryClass("1", 1, 1));
+                      // category.name = catName.text;
+                      // category.budgetLimit = int.parse(catLimit.text);
+                      // category.current = 0;
+
+                      // var result = functions.addCategory(category);
+                      // print("db ${result.toString()}");
+                      // Navigator.pop(context);
+                      // progressValue(double.parse(catLimit.text.toString()), 23);
+                      // getCategories();
+                    });
+                    Navigator.pop(context);
                   },
                 ),
               ),
@@ -112,14 +162,14 @@ class _HomeScreen extends State<HomeScreen> {
     return Container();
   }
 
-  double progressValue(double limit, double current) {
-    if (limit == 0)
-      perc = 0.0;
-    else {
-      perc = (current / limit) * 90;
-    }
-    return perc;
-  }
+  // double progressValue(double limit, double current) {
+  //   if (limit == 0)
+  //     perc = 0.0;
+  //   else {
+  //     perc = (current / limit) * 90;
+  //   }
+  //   return perc;
+  // }
 
   Widget deleteDesign() {
     return Padding(
@@ -145,14 +195,14 @@ class _HomeScreen extends State<HomeScreen> {
               FlatButton(
                 color: Colors.green,
                 onPressed: () {
-                  setState(() async {
-                    category.name = catNameEdit.text;
-                    category.budgetLimit = int.parse(catLimitEdit.text);
-                    category.id = _category[0]['id'];
-                    var result = await functions.updateCategory(category);
-                    list.clear();
-                    getCategories();
-                  });
+                  // setState(() async {
+                  //   _category.name = catNameEdit.text;
+                  //    category.budgetLimit = int.parse(catLimitEdit.text);
+                  //    _category.id = _category[0]['id'];
+                  //    var result = await functions.updateCategory(category);
+                  //    list.clear();
+                  //    getCategories();
+                  // });
                 },
                 child: Text("Update"),
               ),
@@ -182,47 +232,13 @@ class _HomeScreen extends State<HomeScreen> {
         });
   }
 
-  void confirm() {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Add Category?"),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("No", style: TextStyle(fontSize: 20.0)),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              FlatButton(
-                child: Text("Yes", style: TextStyle(fontSize: 20.0)),
-                onPressed: () async {
-                  setState(() {
-                    // category.add(CategoryClass("1", 1, 1));
-                    category.name = catName.text;
-                    category.budgetLimit = int.parse(catLimit.text);
-                    category.current = 0;
-                    var result = functions.addCategory(category);
-                    print("db ${result.toString()}");
-                    Navigator.pop(context);
-                    progressValue(double.parse(catLimit.text.toString()), 23);
-                    getCategories();
-                  });
-                },
-              ),
-            ],
-          );
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Color(0xffF1F3F6),
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Color(0xffF1F3F6),
           elevation: 0,
           centerTitle: true,
           title: Text(
@@ -254,7 +270,6 @@ class _HomeScreen extends State<HomeScreen> {
                   ),
                   width: 270.0,
                   height: 250.0,
-                  //
                   child: Center(
                     child: Column(
                       children: <Widget>[
@@ -266,16 +281,67 @@ class _HomeScreen extends State<HomeScreen> {
                               fontSize: 20.0,
                               color: Theme.of(context).accentColor),
                         ),
+                        SizedBox(height: 5.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            IconButton(
+                              icon: Icon(Icons.arrow_back),
+                              iconSize: 30.0,
+                              onPressed: () {},
+                            ),
+                            Text(
+                              'Feb 10.2020 - Feb 16.2020',
+                              style: TextStyle(
+                                  fontFamily: "Jose",
+                                  fontSize: 20.0,
+                                  color: Theme.of(context).accentColor),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.arrow_forward),
+                              iconSize: 30.0,
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 30.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Bar(
+                              label: 'Su',
+                            ),
+                            Bar(
+                              label: 'Mo',
+                            ),
+                            Bar(
+                              label: 'Tu',
+                            ),
+                            Bar(
+                              label: 'We',
+                            ),
+                            Bar(
+                              label: 'Th',
+                            ),
+                            Bar(
+                              label: 'Fr',
+                            ),
+                            Bar(
+                              label: 'Sa',
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 ),
-                list.length != 0
+                _categoryList.length != 0
                     ? Expanded(
                         child: ListView.builder(
                             padding: EdgeInsets.all(16.0),
                             shrinkWrap: true,
-                            itemCount: list.length,
+                            itemCount: _categoryList.length,
                             itemBuilder: (BuildContext context, int index) {
                               return Dismissible(
                                 key: UniqueKey(),
@@ -283,13 +349,13 @@ class _HomeScreen extends State<HomeScreen> {
                                   if (direction.toString() ==
                                       "DismissDirection.endToStart") {
                                     edit(context);
-                                    getCategories();
+                                    // getCategories();
                                   } else {
-                                    var result = await functions
-                                        .deleteCategory(list[index].id);
-
-                                    list.clear();
-                                    getCategories();
+                                    // var result = await functions
+                                    //     .deleteCategory(list[index].id);
+                                    //
+                                    // list.clear();
+                                    // getCategories();
                                   }
                                 },
                                 child: Container(
@@ -309,35 +375,36 @@ class _HomeScreen extends State<HomeScreen> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                CategoryScreen(),
+                                                CategoryScreen(
+                                                    catID:
+                                                        _categoryList[index].id,
+                                                    name: _categoryList[index]
+                                                        .name),
                                           ),
                                         );
                                       },
-                                      title: Text(
-                                        "${list[index].name}",
-                                        style: TextStyle(
-                                            color:
-                                                Theme.of(context).accentColor,
-                                            fontWeight: FontWeight.w400,
-                                            fontSize: 25.0),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                      title: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          progressBar(list[index].current,
-                                              list[index].budgetLimit),
                                           Text(
-                                              "${list[index].current}/${list[index].budgetLimit}"),
+                                            "${_categoryList[index].name}",
+                                            style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .accentColor,
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 25.0),
+                                          ),
+                                          Text(
+                                              "${_categoryList[index].total}/${_categoryList[index].max}"),
                                         ],
                                       ),
-                                      isThreeLine: true,
+                                      leading:
+                                          Text('${_categoryList[index].id}'),
 
-                                      // trailing: Text(
-                                      //   "${list[index].current}/${list[index].budgetLimit}",
-                                      //   style: TextStyle(
-                                      //       fontWeight: FontWeight.w300),
-                                      // ),
+                                      subtitle: progressBar(
+                                          _categoryList[index].total,
+                                          _categoryList[index].max),
                                     ),
                                   ),
                                 ),
