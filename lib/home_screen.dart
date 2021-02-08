@@ -134,8 +134,8 @@ class _HomeScreen extends State<HomeScreen> {
                       _category.max = double.parse(catLimit.text);
                       //print(_category.id);
                       var result = _categoryService.saveCategory(_category);
-                      print(result);
-
+                      print(result)
+                      //chek cehck heck
                       getAllCategories();
 
                       // category.add(CategoryClass("1", 1, 1));

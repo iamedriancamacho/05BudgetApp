@@ -34,18 +34,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
     setState(() {
       items.forEach((_item) {
         var itemModel = Item();
-          itemModel.name = _item['name'];
-          itemModel.datetime = _item['datetime'];
-          itemModel.amount = _item['amount'];
-          itemModel.catID = _item['catID'];
-          itemModel.id = _item['id'];
+        itemModel.name = _item['name'];
+        itemModel.datetime = _item['datetime'];
+        itemModel.amount = _item['amount'];
+        itemModel.catID = _item['catID'];
+        itemModel.id = _item['id'];
 
-        if (itemModel.id == null) itemNumber++;
+        if (itemModel.id == null)
+          itemNumber++;
         else {
-          itemModel.id= itemNumber++;
+          itemModel.id = itemNumber++;
         }
-          print('my getAllItems is ${itemModel.id}');
-          _itemList.add(itemModel);
+        print('my getAllItems is ${itemModel.id}');
+        _itemList.add(itemModel);
       });
     });
   }
@@ -110,7 +111,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                   onPressed: () async {
                     setState(() {
-
                       _item.id = itemNumber;
                       print('my SUBMIT is ${_item.id}');
                       _item.name = itemName.text;
@@ -232,8 +232,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                   ],
                                 ),
                                 subtitle: Text('Date here please ty'),
-                                trailing: Text("${_itemList[index].amount}"
-                                ),
+                                trailing: Text("${_itemList[index].amount}"),
                                 leading: Text('${_itemList[index].id}'),
                               ),
                             ),
