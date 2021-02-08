@@ -25,8 +25,14 @@ class Repository {
   }
 
   //Read Data from Table
-readData(table) async{
+  readData(table) async {
     var connection = await finaldb;
     return await connection.query(table);
-}
+  }
+
+  //read data from table by ID
+  readDataByID(table, id) async {
+    var connection = await finaldb;
+    return await connection.query(table, where: 'id=?', whereArgs: [id]);
+  }
 }

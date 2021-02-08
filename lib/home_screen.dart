@@ -6,28 +6,34 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'item_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  final String title;
+
+  HomeScreen({this.title});
+
   @override
   _HomeScreen createState() => _HomeScreen();
 }
 
 class _HomeScreen extends State<HomeScreen> {
+  //textfields
   final catName = TextEditingController();
   final catLimit = TextEditingController();
 
+  //edit textfields
   final catNameEdit = TextEditingController();
   final catLimitEdit = TextEditingController();
 
-  var _category = Category();
-  var _categoryService = CategoryService();
-  int catNumber;
-
-  List<Category> _categoryList = List<Category>();
+  var _category = Category(); //var used for accessing category method
+  var _categoryService = CategoryService(); //var used for accessing catService;
+  var category; //global var from _editCat
+  int catNumber; //for id
+  List<Category> _categoryList = List<Category>(); //list
 
   @override
   void initState() {
     super.initState();
     getAllCategories();
-    catNumber = 100;
+    catNumber = 0;
   }
 
   getAllCategories() async {
@@ -38,9 +44,10 @@ class _HomeScreen extends State<HomeScreen> {
       categories.forEach((category) {
         var catModel = Category();
         catModel.id = category['id'];
-        if (catModel.id == null) catNumber++;
+        if (catModel.id == null)
+          catNumber++;
         else {
-         catModel.id= catNumber++;
+          catModel.id = catNumber++;
         }
         print('my ID is ${catModel.id}');
         catModel.name = category['name'];
@@ -50,20 +57,6 @@ class _HomeScreen extends State<HomeScreen> {
       });
     });
   }
-
-  // getCategories() async {
-  //   var categories = await functions.readCategory();
-  //   setState(() {
-  //     categories.forEach((category) {
-  //       var catModel = CategoryClass();
-  //       catModel.name = category['name'];
-  //       catModel.budgetLimit = category['budgetLimit'];
-  //       catModel.id = category['id'];
-  //       catModel.current = category['current'];
-  //       list.add(catModel);
-  //     });
-  //   });
-  // }
 
   Widget progressBar(double total, double max) {
     return Container(
@@ -178,7 +171,21 @@ class _HomeScreen extends State<HomeScreen> {
     );
   }
 
-  edit(BuildContext context) {
+  //this is a method
+  _editCategory(
+      BuildContext context, categoryID, categoryName, categoryLimit) async {
+    category = await _categoryService.readCategoriesByID(categoryID);
+    // print('_editCategory ${category[0]['id']}');
+    // print('_editCategory ${category[0]['name']}');
+    // print('_editCategory ${category[0]['max']}');
+    setState(() {
+      catNameEdit.text = category[0]['name'] ?? 'NO Name';
+      catLimitEdit.text = category[0]['max'].toString() ?? 'No Max';
+    });
+    _edit(context);
+  }
+
+  _edit(BuildContext context) {
     return showDialog(
         context: context,
         barrierDismissible: true,
@@ -188,7 +195,10 @@ class _HomeScreen extends State<HomeScreen> {
               FlatButton(
                 color: Colors.red,
                 child: Text("Cancel"),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pop(context);
+                  //insert something here
+                },
               ),
               FlatButton(
                 color: Colors.green,
@@ -196,10 +206,10 @@ class _HomeScreen extends State<HomeScreen> {
                   // setState(() async {
                   //   _category.name = catNameEdit.text;
                   //    category.budgetLimit = int.parse(catLimitEdit.text);
-                  //    _category.id = _category[0]['id'];
-                  //    var result = await functions.updateCategory(category);
-                  //    list.clear();
-                  //    getCategories();
+                  //    //_category.id = _category[0]['id'];
+                  //    //var result = await functions.updateCategory(category);
+                  //    //list.clear();
+                  //    //getCategories();
                   // });
                 },
                 child: Text("Update"),
@@ -288,7 +298,7 @@ class _HomeScreen extends State<HomeScreen> {
                     ? Expanded(
                         child: ListView.builder(
                             padding: EdgeInsets.all(16.0),
-                            shrinkWrap: true,
+                            //shrinkWrap: true,
                             itemCount: _categoryList.length,
                             itemBuilder: (BuildContext context, int index) {
                               return Dismissible(
@@ -296,8 +306,13 @@ class _HomeScreen extends State<HomeScreen> {
                                 onDismissed: (direction) async {
                                   if (direction.toString() ==
                                       "DismissDirection.endToStart") {
-                                    edit(context);
+                                    _editCategory(
+                                        context,
+                                        _categoryList[index].id,
+                                        _categoryList[index].name,
+                                        _categoryList[index].max);
                                     // getCategories();
+                                    _edit(context);
                                   } else {
                                     // var result = await functions
                                     //     .deleteCategory(list[index].id);
@@ -347,7 +362,8 @@ class _HomeScreen extends State<HomeScreen> {
                                               "${_categoryList[index].total}/${_categoryList[index].max}"),
                                         ],
                                       ),
-                                      leading: Text('${_categoryList[index].id}'),
+                                      // leading:
+                                      //     Text('${_categoryList[index].id}'),
 
                                       subtitle: progressBar(
                                           _categoryList[index].total,

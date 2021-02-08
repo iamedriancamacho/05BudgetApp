@@ -5,7 +5,7 @@ class Item {
   double amount;
   int catID;
 
-  ItemMap() {
+  itemMap() {
     var map = Map<String, dynamic>();
 
     map['id'] = id;

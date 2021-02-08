@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
               fontWeight: FontWeight.bold,
             )),
       ),
-      home: HomeScreen(),
+      home: HomeScreen(title: 'Simple Budget'),
     );
   }
 }
