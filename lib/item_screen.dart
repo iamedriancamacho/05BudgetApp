@@ -16,39 +16,40 @@ class CategoryScreen extends StatefulWidget {
 
 class _CategoryScreenState extends State<CategoryScreen> {
   List<Item> _itemList = List<Item>();
-  int itemNumber;
+
+  final itemName = TextEditingController();
+  final itemAmount = TextEditingController();
+
+  final itemNameEdit = TextEditingController();
+  final itemLimitEdit = TextEditingController();
+
+  var _item = Item();
+  var _itemService = ItemService();
+  var item;
+  int itemNumber = 20;
 
   @override
   void initState() {
     super.initState();
     getAllItems();
-    itemNumber = 200;
   }
-
-  final itemName = TextEditingController();
-  final itemAmount = TextEditingController();
-  var _item = Item();
-  var _itemService = ItemService();
 
   getAllItems() async {
     _itemList = List<Item>();
     var items = await _itemService.readItem();
-    setState(() {
-      items.forEach((_item) {
-        var itemModel = Item();
-        itemModel.name = _item['name'];
-        itemModel.datetime = _item['datetime'];
-        itemModel.amount = _item['amount'];
-        itemModel.catID = _item['catID'];
-        itemModel.id = _item['id'];
 
-        if (itemModel.id == null)
-          itemNumber++;
-        else {
-          itemModel.id = itemNumber++;
+    setState(() {
+      items.forEach((category) {
+        var itemModel = Item();
+        itemModel.id = category['id'];
+        itemModel.name = category['name'];
+        itemModel.datetime = category['datetime'];
+        itemModel.amount = category['amount'];
+        itemModel.catID = category['catID'];
+        //checks if catID is correct
+        if(itemModel.catID== widget.catID){
+          _itemList.add(itemModel);
         }
-        print('my getAllItems is ${itemModel.id}');
-        _itemList.add(itemModel);
       });
     });
   }
@@ -112,29 +113,33 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     style: TextStyle(fontSize: 17.0),
                   ),
                   onPressed: () async {
-                    setState(() {
-                      _item.id = itemNumber;
-                      print('my SUBMIT is ${_item.id}');
-                      _item.name = itemName.text;
-                      //insert datetime here
-                      _item.amount = double.parse(itemAmount.text);
-                      _item.catID = widget.catID;
-
-                      var result = _itemService.saveItem(_item);
-                      print(result);
-                      getAllItems();
-
-                      // category.add(CategoryClass("1", 1, 1));
-                      // category.name = catName.text;
-                      // category.budgetLimit = int.parse(catLimit.text);
-                      // category.current = 0;
-
-                      // var result = functions.addCategory(category);
-                      // print("db ${result.toString()}");
-                      // Navigator.pop(context);
-                      // progressValue(double.parse(catLimit.text.toString()), 23);
-                      // getCategories();
+                    //for checking
+                    int temp = 0;
+                    var categories = await _itemService.readItem();
+                    categories.forEach((category) {
+                      temp++;
                     });
+                    //end of checking
+                    _item.id = itemNumber + temp++;
+                    _item.name = itemName.text;
+                    _item.amount = double.parse(itemAmount.text);
+                    _item.datetime = 'insert datetime here';
+                    _item.catID = widget.catID;
+
+                    var result = await _itemService.saveItem(_item);
+                    print(result);
+                    getAllItems();
+
+                    // category.add(CategoryClass("1", 1, 1));
+                    // category.name = catName.text;
+                    // category.budgetLimit = int.parse(catLimit.text);
+                    // category.current = 0;
+
+                    // var result = functions.addCategory(category);
+                    // print("db ${result.toString()}");
+                    // Navigator.pop(context);
+                    // progressValue(double.parse(catLimit.text.toString()), 23);
+                    // getCategories();
                     Navigator.pop(context);
                   },
                 ),
@@ -145,112 +150,233 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return Container();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    double totalAmountSpent = 0;
-    totalAmountSpent += expense.cost;
-    final double amountLeft = maxAmount - totalAmountSpent;
-    final double percent = amountLeft / maxAmount;
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text("${widget.name}"),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            iconSize: 30.0,
-            onPressed: () {
-              addItem();
-            },
-          )
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.all(20.0),
-              padding: EdgeInsets.all(20.0),
-              height: 250.0,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    offset: Offset(0, 2),
-                    blurRadius: 6.0,
+  _editList(
+      BuildContext context, categoryID, categoryName, categoryLimit) async {
+    item = await _itemService.readItemsByID(categoryID);
+    // print('_editCategory ${category[0]['id']}');
+    // print('_editCategory ${category[0]['name']}');
+    // print('_editCategory ${category[0]['max']}');
+    setState(() {
+      itemNameEdit.text = item[0]['name'] ?? 'NO Name';
+      itemLimitEdit.text = item[0]['amount'].toString() ?? 'No Amount';
+    });
+    _editL(context);
+  }
+
+  _editL(BuildContext context) {
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          return AlertDialog(
+            actions: <Widget>[
+              FlatButton(
+                color: Colors.red,
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+              ),
+              FlatButton(
+                child: Text("Update"),
+                color: Colors.green,
+                onPressed: () async {
+                  _item.id = item[0]['id'];
+                  _item.name = itemNameEdit.text;
+                  _item.datetime = " insert datetime here";
+                  _item.amount = double.parse(itemLimitEdit.text);
+
+                  var result = await _itemService.updateItem(_item);
+                  if (result > 0) {
+                    print('RESULT is $result');
+                    Navigator.pop(context);
+                    Navigator.pop(context); //idk ngano duha ka pop HUHUHU
+                    //list.clear();
+                    getAllItems();
+                  }
+                },
+              ),
+            ],
+            title: Text("Edit Category"),
+            content: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  TextField(
+                    controller: itemNameEdit,
+                    decoration: InputDecoration(
+                      labelText: "Name",
+                    ),
+                  ),
+                  TextField(
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
+                    controller: itemLimitEdit,
+                    decoration: InputDecoration(
+                      labelText: "Limit",
+                    ),
                   ),
                 ],
               ),
-              child: CustomPaint(
-                foregroundPainter: RadialPainter(
-                  bgColor: Colors.grey[200],
-                  lineColor: getColor(context, percent),
-                  percent: percent,
-                  width: 15.0,
-                ),
-              ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _itemList.length != 0
-                  ? ListView.builder(
-                      padding: EdgeInsets.all(16.0),
-                      shrinkWrap: true,
-                      itemCount: _itemList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Dismissible(
-                          key: UniqueKey(),
-                          onDismissed: (direction) async {
-                            if (direction.toString() ==
-                                "DismissDirection.endToStart") {
-                              //edit(context);
-                              // getCategories();
-                            } else {
-                              // var result = await functions
-                              //     .deleteCategory(list[index].id);
-                              //
-                              // list.clear();
-                              // getCategories();
-                            }
-                          },
-                          child: Container(
-                            height: 110.0,
-                            width: MediaQuery.of(context).size.width,
-                            child: Card(
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15.0),
-                              ),
-                              color: Color(0xffF1F3F6),
-                              child: ListTile(
-                                // shape: ,
-                                //minVerticalPadding: 20.0,
-                                onTap: () {},
-                                title: Text(
-                                  "${_itemList[index].name}",
-                                  style: TextStyle(
-                                      color: Theme.of(context).accentColor,
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 25.0),
-                                ),
-                                subtitle: Text('Date here please ty'),
-                                trailing: Text(
-                                  "-\$ ${_itemList[index].amount}",
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                                leading: Text('${_itemList[index].id}'),
-                              ),
-                            ),
-                          ),
-                        );
-                      })
-                  : Text("No Categories Yet!"),
-            ),
+          );
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double totalAmountSpent = 0;
+    // totalAmountSpent += expense.cost;
+    totalAmountSpent += 0;
+    var maxAmount = 0;
+    final double amountLeft = maxAmount - totalAmountSpent;
+    final double percent = amountLeft / maxAmount;
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text("${widget.name}"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                addItem();
+              },
+            )
           ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20.0),
+          child: Center(
+            child: Column(
+              children: <Widget>[
+
+                Container(
+                  //margin: EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(20.0),
+                  height: 250.0,
+                  //width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        offset: Offset(0, 2),
+                        blurRadius: 6.0,
+                      ),
+                    ],
+                  ),
+                  child: CustomPaint(
+                    foregroundPainter: RadialPainter(
+                      bgColor: Colors.grey[200],
+                      lineColor: getColor(context, percent),
+                      percent: percent,
+                      width: 15.0,
+                    ),
+                  ),
+                ),
+                _itemList.length != 0
+                    ? Expanded(
+                        child: ListView.builder(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            itemCount: _itemList.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Dismissible(
+                                background: Center(
+                                  child: Container(
+                                    padding: EdgeInsets.only(left: 20.0),
+                                    color: Colors.red,
+                                    child: Icon(
+                                      Icons.delete,
+                                      size: 35.0,
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                    alignment: Alignment.centerLeft,
+                                  ),
+                                ),
+                                secondaryBackground: Center(
+                                  child: Container(
+                                    padding: EdgeInsets.only(right: 20.0),
+                                    color: Colors.orange,
+                                    child: Icon(
+                                      Icons.create,
+                                      size: 35.0,
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                    alignment: Alignment.centerRight,
+                                  ),
+                                ),
+                                key: UniqueKey(),
+                                onDismissed: (direction) async {
+                                  if (direction.toString() ==
+                                      "DismissDirection.endToStart") {
+                                    _editList(
+                                        context,
+                                        _itemList[index].id,
+                                        _itemList[index].name,
+                                        _itemList[index].amount);
+
+                                    _editL(context);
+                                  } else {
+                                    var result = await _itemService
+                                        .deleteCategory(_itemList[index].id);
+                                    if (result > 0) {
+                                      print('RESULT is $result');
+                                      //list.clear();
+                                      getAllItems();
+                                    }
+                                    // var result = await _itemService
+                                    //     .deleteCategory(_itemList[index].id);
+                                    // if (result > 0) {
+                                    //   print('RESULT is $result');
+                                    //   //list.clear();
+                                    //   getAllItems();
+                                    // }
+                                  }
+                                },
+                                child: Center(
+                                  child: Container(
+                                    height: 120.0,
+                                    width:
+                                        MediaQuery.of(context).size.width / 1.2,
+                                    decoration: BoxDecoration(boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.white, blurRadius: 10.0)
+                                    ]),
+                                    child: Card(
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20.0),
+                                      ),
+                                      color: Color(0xffF1F3F6),
+                                      child: ListTile(
+                                        minVerticalPadding: 20.0,
+                                        title: Text(
+                                          "${_itemList[index].name}",
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .accentColor,
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 25.0),
+                                        ),
+                                        leading: Text('${_itemList[index].id}'),
+                                        subtitle: Text('categoryID: ${_itemList[index].catID} \n*dapat datetime ni sha*'),
+                                        trailing: Text(
+                                            " -\$ ${_itemList[index].amount}",
+                                            style: TextStyle(color: Colors.red)),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                      )
+                    : Text("No Items Yet!")
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -22,4 +22,17 @@ class ItemService {
   readItem() async {
     return await _rep.readData('ITEM');
   }
+
+  //read data by ID
+  readItemsByID(itemID) async {
+    return await _rep.readDataByID('ITEM', itemID);
+  }
+
+  updateItem(Item item) async {
+    return await _rep.updateData('ITEM', item.itemMap());
+  }
+
+  deleteCategory(int itemID) async{
+    return await _rep.deleteDataByID('ITEM', itemID);
+  }
 }
