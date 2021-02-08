@@ -362,7 +362,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                               fontSize: 25.0),
                                         ),
                                         leading: Text('${_itemList[index].id}'),
-                                        subtitle: Text('categoryID: ${_itemList[index].catID}'),
+                                        subtitle: Text('categoryID: ${_itemList[index].catID} \n*dapat datetime ni sha*'),
                                         trailing: Text(
                                             " -\$ ${_itemList[index].amount}",
                                             style: TextStyle(color: Colors.red)),
