@@ -311,7 +311,7 @@ class _HomeScreen extends State<HomeScreen> {
                         Navigator.pop(context);
                         addItem();
                       })
-                  : ':)',
+                  : Text(':)'),
               SizedBox(height: 20.0),
             ],
           );
@@ -434,6 +434,7 @@ class _HomeScreen extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(vertical: 20.0),
           child: Column(
             children: <Widget>[
+              Text('${itemList.length}'),
               SizedBox(height: 20.0),
               Center(
                 child: Container(
@@ -523,7 +524,8 @@ class _HomeScreen extends State<HomeScreen> {
                           itemCount: categoryList.length,
                           itemBuilder: (BuildContext context, int index) {
                             return Dismissible(
-                              secondaryBackground: Center(
+                              //secondaryBG ni sha before pero no worries
+                              background: Center(
                                 child: Container(
                                   padding: EdgeInsets.only(right: 20.0),
                                   color: Colors.orange,
