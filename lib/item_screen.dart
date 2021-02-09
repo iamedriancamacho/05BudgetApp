@@ -334,7 +334,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                       ),
                                       color: Color(0xffF1F3F6),
                                       child: ListTile(
-                                        minVerticalPadding: 20.0,
+                                        //minVerticalPadding: 20.0,
                                         title: Text(
                                           "${itemList[index].name}",
                                           style: TextStyle(

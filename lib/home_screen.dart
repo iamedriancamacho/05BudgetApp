@@ -568,7 +568,7 @@ class _HomeScreen extends State<HomeScreen> {
                                     ),
                                     color: Color(0xffF1F3F6),
                                     child: ListTile(
-                                      minVerticalPadding: 20.0,
+                                      //minVerticalPadding: 20.0,
                                       onTap: () {
                                         Navigator.push(
                                           context,
