@@ -60,32 +60,32 @@ class BarChart extends StatelessWidget {
               ),
               Bar(
                 label: 'Mo',
-                amountSpent: expenses[0],
+                amountSpent: expenses[1],
                 mostExpensive: mostExpensive,
               ),
               Bar(
                 label: 'Tu',
-                amountSpent: expenses[0],
+                amountSpent: expenses[2],
                 mostExpensive: mostExpensive,
               ),
               Bar(
                 label: 'We',
-                amountSpent: expenses[0],
+                amountSpent: expenses[3],
                 mostExpensive: mostExpensive,
               ),
               Bar(
                 label: 'Th',
-                amountSpent: expenses[0],
+                amountSpent: expenses[4],
                 mostExpensive: mostExpensive,
               ),
               Bar(
                 label: 'Fr',
-                amountSpent: expenses[0],
+                amountSpent: expenses[5],
                 mostExpensive: mostExpensive,
               ),
               Bar(
                 label: 'Sa',
-                amountSpent: expenses[0],
+                amountSpent: expenses[6],
                 mostExpensive: mostExpensive,
               ),
             ],

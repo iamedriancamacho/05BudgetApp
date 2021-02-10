@@ -484,33 +484,6 @@ class _HomeScreen extends State<HomeScreen> {
                             ],
                           ),
                           SizedBox(height: 30.0),
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          //   crossAxisAlignment: CrossAxisAlignment.end,
-                          //   children: <Widget>[
-                          //     Bar(
-                          //       label: 'Su',
-                          //     ),
-                          //     Bar(
-                          //       label: 'Mo',
-                          //     ),
-                          //     Bar(
-                          //       label: 'Tu',
-                          //     ),
-                          //     Bar(
-                          //       label: 'We',
-                          //     ),
-                          //     Bar(
-                          //       label: 'Th',
-                          //     ),
-                          //     Bar(
-                          //       label: 'Fr',
-                          //     ),
-                          //     Bar(
-                          //       label: 'Sa',
-                          //     ),
-                          //   ],
-                          // ),
                         ],
                       ),
                     ),

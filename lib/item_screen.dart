@@ -1,3 +1,4 @@
+import 'package:budget/models/category.dart';
 import 'package:budget/models/item.dart';
 import 'package:budget/services/item_service.dart';
 import 'package:flutter/material.dart';
@@ -214,12 +215,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var _category = Category();
+    var _item = Item();
+
     double totalAmountSpent = 0;
-    // totalAmountSpent += expense.cost;
-    totalAmountSpent += 0;
-    var maxAmount = 0;
-    final double amountLeft = maxAmount - totalAmountSpent;
-    final double percent = amountLeft / maxAmount;
+
+    totalAmountSpent += _item.amount; //amount or total??? or something
+    final double amountLeft = _category.max = totalAmountSpent;
+    final double percent = amountLeft / _category.max;
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -256,12 +259,22 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       ),
                     ],
                   ),
+                  //radial painter
                   child: CustomPaint(
                     foregroundPainter: RadialPainter(
                       bgColor: Colors.grey[200],
                       lineColor: getColor(context, percent),
                       percent: percent,
                       width: 15.0,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '\$${amountLeft.toStringAsFixed(2)} / \$${_category.max}',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -317,6 +330,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                     }
                                   }
                                 },
+                                //card
                                 child: Center(
                                   child: Container(
                                     height: 120.0,
