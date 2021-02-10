@@ -1,4 +1,3 @@
-import 'package:budget/models/category.dart';
 import 'package:budget/models/item.dart';
 import 'package:budget/services/item_service.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +7,9 @@ import 'package:budget/helpers/color_helper.dart';
 class CategoryScreen extends StatefulWidget {
   final String name;
   final int catID;
+  final double catMax;
 
-  CategoryScreen({this.name, this.catID});
+  CategoryScreen({this.name, this.catID, this.catMax});
 
   @override
   _CategoryScreenState createState() => _CategoryScreenState();
@@ -20,11 +20,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
   var _itemService = ItemService();
   var item;
   int itemNumber = 20;
+  double tempMoney=0;
+  var countMoney=0;
+  var percent;
 
   @override
   void initState() {
     super.initState();
     getAllItems();
+    print('countMoney: $countMoney');
   }
 
   getAllItems() async {
@@ -33,6 +37,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
     setState(() {
       items.forEach((category) {
+
         var itemModel = Item();
         itemModel.id = category['id'];
         itemModel.name = category['name'];
@@ -42,8 +47,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
         //checks if catID is correct
         if (itemModel.catID == widget.catID) {
           itemList.add(itemModel);
+          countMoney++;
         }
       });
+
+      if(itemList.isNotEmpty){
+        print('nakasulod ko diri');
+        for(int i=0; i < countMoney; i++){
+          tempMoney += itemList[i].amount;
+        }
+        print('tempMoney: $tempMoney');
+        percent = tempMoney/ widget.catMax;
+      }
     });
   }
 
@@ -215,14 +230,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var _category = Category();
-    var _item = Item();
-
-    double totalAmountSpent = 0;
-
-    totalAmountSpent += _item.amount; //amount or total??? or something
-    final double amountLeft = _category.max = totalAmountSpent;
-    final double percent = amountLeft / _category.max;
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -263,13 +270,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   child: CustomPaint(
                     foregroundPainter: RadialPainter(
                       bgColor: Colors.grey[200],
-                      lineColor: getColor(context, percent),
-                      percent: percent,
+                      lineColor: getColor(context, 0),
+                      percent: tempMoney<=0 ? 0: percent, //percent <= 0||percent ==null? 0: percent,
                       width: 15.0,
                     ),
                     child: Center(
                       child: Text(
-                        '\$${amountLeft.toStringAsFixed(2)} / \$${_category.max}',
+                        '\$$tempMoney / \$${widget.catMax}',
                         style: TextStyle(
                           fontSize: 20.0,
                           fontWeight: FontWeight.w600,

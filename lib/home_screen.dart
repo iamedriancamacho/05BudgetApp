@@ -283,7 +283,7 @@ class _HomeScreen extends State<HomeScreen> {
                     //end of checking
                     _category.id = temp++;
                     _category.name = catName.text;
-                    _category.total = 69;
+                    _category.total = 0;
                     _category.max = double.parse(catLimit.text);
                     //print(_category.id);
                     var result = await _categoryService.saveCategory(_category);
@@ -548,6 +548,7 @@ class _HomeScreen extends State<HomeScreen> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 CategoryScreen(
+                                                  catMax: categoryList[index].max,
                                                     catID:
                                                         categoryList[index].id,
                                                     name: categoryList[index]
