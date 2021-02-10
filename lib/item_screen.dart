@@ -1,4 +1,6 @@
+import 'package:budget/models/category.dart';
 import 'package:budget/models/item.dart';
+import 'package:budget/services/category_service.dart';
 import 'package:budget/services/item_service.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/widgets/radial_painter.dart';
@@ -8,36 +10,43 @@ class CategoryScreen extends StatefulWidget {
   final String name;
   final int catID;
   final double catMax;
+  final Function updateCat;
 
-  CategoryScreen({this.name, this.catID, this.catMax});
+  CategoryScreen(
+      {this.updateCat,
+      @required this.name,
+      @required this.catID,
+      @required this.catMax});
 
   @override
   _CategoryScreenState createState() => _CategoryScreenState();
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
+  var _cat = Category(); //update cat
+  var _categoryService = CategoryService(); //update cat
   var _item = Item();
   var _itemService = ItemService();
   var item;
   int itemNumber = 20;
-  double tempMoney=0;
-  var countMoney=0;
+  double tempMoney = 0;
+  var countMoney = 0;
   var percent;
 
   @override
   void initState() {
     super.initState();
     getAllItems();
-    print('countMoney: $countMoney');
   }
 
   getAllItems() async {
+    tempMoney = 0;
+    countMoney = 0;
     itemList = List<Item>();
     var items = await _itemService.readItem();
 
     setState(() {
       items.forEach((category) {
-
         var itemModel = Item();
         itemModel.id = category['id'];
         itemModel.name = category['name'];
@@ -51,15 +60,29 @@ class _CategoryScreenState extends State<CategoryScreen> {
         }
       });
 
-      if(itemList.isNotEmpty){
-        print('nakasulod ko diri');
-        for(int i=0; i < countMoney; i++){
+      if (itemList.isNotEmpty) {
+        print('countMoney: $countMoney');
+        print('nakasulod ko diri $itemList');
+        for (int i = 0; i < countMoney; i++) {
+          print('itemList.amount: ${itemList[i].amount}');
           tempMoney += itemList[i].amount;
         }
         print('tempMoney: $tempMoney');
-        percent = tempMoney/ widget.catMax;
+        percent = tempMoney / widget.catMax;
       }
     });
+
+    if (tempMoney > 0) {
+      _cat.id = widget.catID;
+      _cat.max = widget.catMax;
+      _cat.name = widget.name;
+      _cat.total = tempMoney;
+      print('_cat.total is: ${_cat.total}');
+
+      var result2 = await _categoryService.updateCategory(_cat);
+      print(result2);
+      widget.updateCat(tempMoney, _cat.id, _cat.name, _cat.max);
+    }
   }
 
   Widget addItem() {
@@ -130,13 +153,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                   onPressed: () async {
                     //for checking
-                    int temp = 0;
-                    var categories = await _itemService.readItem();
-                    categories.forEach((category) {
-                      temp++;
-                    });
+
                     //end of checking
-                    _item.id = itemNumber + temp++;
+
+                    //_item.id is AUTOINCREMENT
                     _item.name = itemName.text;
                     _item.amount = double.parse(itemAmount.text);
                     _item.datetime = 'insert datetime here';
@@ -144,8 +164,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
                     var result = await itemService.saveItem(_item);
                     print(result);
-                    getAllItems();
+                    if (result > 0) {
+                      print('RESULT1 is $result');
+                      // Navigator.pop(context);
+                      //Navigator.pop(context); //idk ngano duha ka pop HUHUHU
+                      //list.clear();
+                      //getAllCategories();
+                      //widget.updateCat(tempMoney);
+                    }
+
+                    itemName.text = '';
+                    itemAmount.text = '';
                     Navigator.pop(context);
+                    getAllItems();
                   },
                 ),
               ),
@@ -191,13 +222,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   _item.name = itemNameEdit.text;
                   _item.datetime = " insert datetime here";
                   _item.amount = double.parse(itemLimitEdit.text);
+                  _item.catID = widget.catID;
 
                   var result = await _itemService.updateItem(_item);
                   if (result > 0) {
                     print('RESULT is $result');
                     Navigator.pop(context);
                     Navigator.pop(context); //idk ngano duha ka pop HUHUHU
-                    //list.clear();
                     getAllItems();
                   }
                 },
@@ -217,6 +248,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: true),
                     controller: itemLimitEdit,
+                    enabled: false,
                     decoration: InputDecoration(
                       labelText: "Limit",
                     ),
@@ -256,22 +288,16 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   height: 250.0,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        offset: Offset(0, 2),
-                        blurRadius: 6.0,
-                      ),
-                    ],
+                    color: Color(0xffF1F3F6),
+                    borderRadius: BorderRadius.circular(20.0),
                   ),
                   //radial painter
                   child: CustomPaint(
                     foregroundPainter: RadialPainter(
-                      bgColor: Colors.grey[200],
-                      lineColor: getColor(context, 0),
-                      percent: tempMoney<=0 ? 0: percent, //percent <= 0||percent ==null? 0: percent,
+                      bgColor: Colors.grey[400],
+                      lineColor:
+                          getColor(context, tempMoney <= 0 ? 0 : percent),
+                      percent: tempMoney <= 0 ? 0 : percent,
                       width: 15.0,
                     ),
                     child: Center(

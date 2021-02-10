@@ -26,9 +26,11 @@ class _HomeScreen extends State<HomeScreen> {
   int catNumber = 10; //for id
 
   //dropdown
+  int x; //get ID of list
   String dropdownValue;
   List<String> catDropDownList = [];
-  int x; //get ID of list
+
+  //end of variables
 
   @override
   void initState() {
@@ -57,10 +59,12 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   //display categories
+  //Async means that this function is asynchronous and you might need to wait a bit to get its result.
   getAllCategories() async {
     categoryList = List<Category>();
     var categories = await _categoryService.readCategories();
 
+    catDropDownList.clear();
     setState(() {
       categories.forEach((category) {
         var catModel = Category();
@@ -75,7 +79,7 @@ class _HomeScreen extends State<HomeScreen> {
         categoryList.add(catModel);
       });
 
-      print(catDropDownList.length);
+      print('catDropdownlist.length: ${catDropDownList.length}');
     });
   }
 
@@ -180,24 +184,31 @@ class _HomeScreen extends State<HomeScreen> {
                     style: TextStyle(fontSize: 17.0),
                   ),
                   onPressed: () async {
-                    //for checking
-                    var temp = 0;
-                    var categories = await itemService.readItem();
-                    categories.forEach((item) {
-                      temp++;
-                    });
-                    //end of checking
-
-                    _item.id = 20 + temp++;
+                    //_item.id = 20 + ++temp;
                     _item.name = itemName.text;
                     _item.amount = double.parse(itemAmount.text);
                     _item.datetime = 'insert datetime here';
                     _item.catID = x;
 
+                    _category.id = x;
+                    _category.max = categoryList[x].max;
+                    _category.name = categoryList[x].name;
+                    _category.total =
+                        double.parse(itemAmount.text) + categoryList[x].total;
+                    print('_category.total is: ${_category.total}');
+
                     var result = await itemService.saveItem(_item);
-                    print('home_screen result is $result');
-                    //getAllItems();
-                    Navigator.pop(context);
+                    var result2 =
+                        await _categoryService.updateCategory(_category);
+                    if (result > 0 ) {
+                      print(result);
+                      print(result2);
+                      print('home_screen result is $result');
+                      _updateCatFromItem(_category.total, _category.id,
+                          _category.name, _category.max);
+                      Navigator.pop(context);
+                    }
+
                   },
                 ),
               ),
@@ -273,7 +284,6 @@ class _HomeScreen extends State<HomeScreen> {
                     style: TextStyle(fontSize: 17.0),
                   ),
                   onPressed: () async {
-                    // catList.clear();
                     //for checking
                     int temp = 0;
                     var categories = await _categoryService.readCategories();
@@ -288,23 +298,15 @@ class _HomeScreen extends State<HomeScreen> {
                     //print(_category.id);
                     var result = await _categoryService.saveCategory(_category);
                     print(result);
+                    catName.text = '';
+                    catLimit.text = '';
                     getAllCategories();
 
-                    // category.add(CategoryClass("1", 1, 1));
-                    // category.name = catName.text;
-                    // category.budgetLimit = int.parse(catLimit.text);
-                    // category.current = 0;
-
-                    // var result = functions.addCategory(category);
-                    // print("db ${result.toString()}");
-                    // Navigator.pop(context);
-                    // progressValue(double.parse(catLimit.text.toString()), 23);
-                    // getCategories();
                     Navigator.pop(context);
                   },
                 ),
               ),
-              itemList.length > 0
+              catDropDownList.length > 0
                   ? FlatButton(
                       child: Text('I already have a category'),
                       onPressed: () {
@@ -319,15 +321,6 @@ class _HomeScreen extends State<HomeScreen> {
 
     return Container();
   }
-
-  // double progressValue(double limit, double current) {
-  //   if (limit == 0)
-  //     perc = 0.0;
-  //   else {
-  //     perc = (current / limit) * 90;
-  //   }
-  //   return perc;
-  // }
 
   //this is a method
   _editCategory(
@@ -365,7 +358,7 @@ class _HomeScreen extends State<HomeScreen> {
                 onPressed: () async {
                   _category.id = category[0]['id'];
                   _category.name = catNameEdit.text;
-                  _category.total = 0;
+                  _category.total = category[0]['total'];
                   _category.max = double.parse(catLimitEdit.text);
 
                   var result = await _categoryService.updateCategory(_category);
@@ -393,6 +386,7 @@ class _HomeScreen extends State<HomeScreen> {
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: true),
                     controller: catLimitEdit,
+                    enabled: false,
                     decoration: InputDecoration(
                       labelText: "Limit",
                     ),
@@ -402,6 +396,25 @@ class _HomeScreen extends State<HomeScreen> {
             ),
           );
         });
+  }
+
+  void _updateCatFromItem(
+      double tempMoney, int id, String name, double max) async {
+    print('_updateCat is here: $tempMoney');
+
+    _category.id = id;
+    _category.name = name;
+    _category.total = tempMoney;
+    _category.max = max;
+    print('_category.total is: ${_category.total}');
+
+    var result2 = await _categoryService.updateCategory(_category);
+    if (result2 > 0) {
+      print('result2 is $result2');
+      setState(() {
+        getAllCategories();
+      });
+    }
   }
 
   @override
@@ -548,7 +561,10 @@ class _HomeScreen extends State<HomeScreen> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 CategoryScreen(
-                                                  catMax: categoryList[index].max,
+                                                    updateCat:
+                                                        _updateCatFromItem,
+                                                    catMax:
+                                                        categoryList[index].max,
                                                     catID:
                                                         categoryList[index].id,
                                                     name: categoryList[index]
