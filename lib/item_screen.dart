@@ -31,7 +31,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   int itemNumber = 20;
   double tempMoney = 0;
   var countMoney = 0;
-  var percent;
+  double percent;
 
   @override
   void initState() {
@@ -157,26 +157,32 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     //end of checking
 
                     //_item.id is AUTOINCREMENT
-                    _item.name = itemName.text;
-                    _item.amount = double.parse(itemAmount.text);
-                    _item.datetime = 'insert datetime here';
-                    _item.catID = widget.catID;
+                    if (double.parse(itemAmount.text) > widget.catMax ||
+                        (double.parse(itemAmount.text) + tempMoney) >
+                            widget.catMax) {
+                      popUp(context);
+                    } else {
+                      _item.name = itemName.text;
+                      _item.amount = double.parse(itemAmount.text);
+                      _item.datetime = 'insert datetime here';
+                      _item.catID = widget.catID;
 
-                    var result = await itemService.saveItem(_item);
-                    print(result);
-                    if (result > 0) {
-                      print('RESULT1 is $result');
-                      // Navigator.pop(context);
-                      //Navigator.pop(context); //idk ngano duha ka pop HUHUHU
-                      //list.clear();
-                      //getAllCategories();
-                      //widget.updateCat(tempMoney);
+                      var result = await itemService.saveItem(_item);
+                      print(result);
+                      if (result > 0) {
+                        print('RESULT1 is $result');
+                        // Navigator.pop(context);
+                        //Navigator.pop(context); //idk ngano duha ka pop HUHUHU
+                        //list.clear();
+                        //getAllCategories();
+                        //widget.updateCat(tempMoney);
+                      }
+                      print("TEMP MONEY: $tempMoney");
+                      itemName.text = '';
+                      itemAmount.text = '';
+                      Navigator.pop(context);
+                      getAllItems();
                     }
-
-                    itemName.text = '';
-                    itemAmount.text = '';
-                    Navigator.pop(context);
-                    getAllItems();
                   },
                 ),
               ),
@@ -199,6 +205,27 @@ class _CategoryScreenState extends State<CategoryScreen> {
     _editL(context);
   }
 
+  popUp(BuildContext context) {
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          return AlertDialog(
+            content:
+                Text("This exceeds the budget limit. You can't add this item."),
+            actions: <Widget>[
+              FlatButton(
+                color: Colors.red,
+                child: Text("Ok"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
   _editL(BuildContext context) {
     return showDialog(
         context: context,
@@ -218,18 +245,25 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 child: Text("Update"),
                 color: Colors.green,
                 onPressed: () async {
-                  _item.id = item[0]['id'];
-                  _item.name = itemNameEdit.text;
-                  _item.datetime = " insert datetime here";
-                  _item.amount = double.parse(itemLimitEdit.text);
-                  _item.catID = widget.catID;
+                  //_item.id is AUTOINCREMENT
+                  if (double.parse(itemLimitEdit.text) > widget.catMax ||
+                      (double.parse(itemLimitEdit.text) + tempMoney) >
+                          widget.catMax) {
+                    popUp(context);
+                  } else {
+                    _item.id = item[0]['id'];
+                    _item.name = itemNameEdit.text;
+                    _item.datetime = " insert datetime here";
+                    _item.amount = double.parse(itemLimitEdit.text);
+                    _item.catID = widget.catID;
 
-                  var result = await _itemService.updateItem(_item);
-                  if (result > 0) {
-                    print('RESULT is $result');
-                    Navigator.pop(context);
-                    Navigator.pop(context); //idk ngano duha ka pop HUHUHU
-                    getAllItems();
+                    var result = await _itemService.updateItem(_item);
+                    if (result > 0) {
+                      print('RESULT is $result');
+                      Navigator.pop(context);
+                      Navigator.pop(context); //idk ngano duha ka pop HUHUHU
+                      getAllItems();
+                    }
                   }
                 },
               ),
@@ -248,7 +282,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: true),
                     controller: itemLimitEdit,
-                    enabled: false,
+                    enabled: true,
                     decoration: InputDecoration(
                       labelText: "Limit",
                     ),
@@ -264,6 +298,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -302,7 +337,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        '\$$tempMoney / \$${widget.catMax}',
+                        '\₱$tempMoney / \₱${widget.catMax}',
                         style: TextStyle(
                           fontSize: 20.0,
                           fontWeight: FontWeight.w600,

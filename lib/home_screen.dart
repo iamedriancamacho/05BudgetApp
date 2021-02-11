@@ -83,6 +83,27 @@ class _HomeScreen extends State<HomeScreen> {
     });
   }
 
+  popUp(BuildContext context) {
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) {
+          return AlertDialog(
+            content:
+                Text("This exceeds the budget limit. You can't add this item."),
+            actions: <Widget>[
+              FlatButton(
+                color: Colors.red,
+                child: Text("Ok"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
   //add item using category screen
   addItem() {
     showModalBottomSheet(
@@ -185,30 +206,37 @@ class _HomeScreen extends State<HomeScreen> {
                   ),
                   onPressed: () async {
                     //_item.id = 20 + ++temp;
-                    _item.name = itemName.text;
-                    _item.amount = double.parse(itemAmount.text);
-                    _item.datetime = 'insert datetime here';
-                    _item.catID = x;
+                    if ((double.parse(itemAmount.text) +
+                            categoryList[x].total) >
+                        categoryList[x].max) {
+                      popUp(context);
+                    } else {
+                      _item.name = itemName.text;
+                      _item.amount = double.parse(itemAmount.text);
+                      _item.datetime = 'insert datetime here';
+                      _item.catID = x;
 
-                    _category.id = x;
-                    _category.max = categoryList[x].max;
-                    _category.name = categoryList[x].name;
-                    _category.total =
-                        double.parse(itemAmount.text) + categoryList[x].total;
-                    print('_category.total is: ${_category.total}');
+                      _category.id = x;
+                      _category.max = categoryList[x].max;
+                      _category.name = categoryList[x].name;
+                      _category.total =
+                          double.parse(itemAmount.text) + categoryList[x].total;
+                      print('_category.total is: ${_category.total}');
 
-                    var result = await itemService.saveItem(_item);
-                    var result2 =
-                        await _categoryService.updateCategory(_category);
-                    if (result > 0 ) {
-                      print(result);
-                      print(result2);
-                      print('home_screen result is $result');
-                      _updateCatFromItem(_category.total, _category.id,
-                          _category.name, _category.max);
-                      Navigator.pop(context);
+                      var result = await itemService.saveItem(_item);
+                      var result2 =
+                          await _categoryService.updateCategory(_category);
+                      if (result > 0) {
+                        print(result);
+                        print(result2);
+                        print('home_screen result is $result');
+                        _updateCatFromItem(_category.total, _category.id,
+                            _category.name, _category.max);
+                        Navigator.pop(context);
+                      }
+                      itemAmount.text = ' ';
+                      itemName.text = ' ';
                     }
-
                   },
                 ),
               ),
@@ -386,7 +414,7 @@ class _HomeScreen extends State<HomeScreen> {
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: true),
                     controller: catLimitEdit,
-                    enabled: false,
+                    enabled: true,
                     decoration: InputDecoration(
                       labelText: "Limit",
                     ),
@@ -421,6 +449,7 @@ class _HomeScreen extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Color(0xffF1F3F6),
         appBar: AppBar(
           backgroundColor: Color(0xffF1F3F6),
@@ -589,6 +618,7 @@ class _HomeScreen extends State<HomeScreen> {
                                               "₱ ${categoryList[index].total}/${categoryList[index].max}"),
                                         ],
                                       ),
+
                                       subtitle: progressBar(
                                           categoryList[index].total,
                                           categoryList[index].max),
