@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 class Item {
   int id;
   String name;
-  DateTime datetime;
+  String datetime;
   double amount;
   int catID;
 
@@ -31,3 +31,6 @@ final itemLimitEdit = TextEditingController();
 //used global because needed sa category
 var item = Item();
 var itemService = ItemService();
+
+DateTime d = DateTime.now();
+//2021-02-11 20:45:22.624682

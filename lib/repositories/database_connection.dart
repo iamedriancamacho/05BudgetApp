@@ -13,9 +13,9 @@ class DatabaseConnection {
 
   _onCreatingDatabase2(Database database, int version) async {
     await database.execute(
-        "CREATE TABLE CAT(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, total REAL NOT NULL, max REAL NOT NULL)");
+        "CREATE TABLE CAT(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, total REAL NOT NULL, max REAL NOT NULL, firstDate TEXT, endDate TEXT)");
 
     await database.execute(
-        "CREATE TABLE ITEM(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, datetime DATETIME, amount REAL, catID INTEGER)");
+        "CREATE TABLE ITEM(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, datetime TEXT NOT NULL, amount REAL NOT NULL, catID INTEGER NOT NULL)");
   }
 }

@@ -9,6 +9,7 @@ import 'item_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 
 class HomeScreen extends StatefulWidget {
   final String title;
@@ -26,6 +27,8 @@ class _HomeScreen extends State<HomeScreen> {
   var _categoryService = CategoryService(); //accessing catService;
   var category; //global var from _editCat
   int catNumber = 10; //for id
+  DateTime newDatetime;
+  String date = "Add Date";
   DateTime currentWeek = new DateTime.now();
 
   //dropdown
@@ -61,6 +64,25 @@ class _HomeScreen extends State<HomeScreen> {
     });
   }
 
+  //getDate
+  _getDate() async {
+    //DateTime date;
+    newDatetime = await showRoundedDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      initialDatePickerMode: DatePickerMode.day,
+      firstDate: DateTime(DateTime.now().year - 1),
+      lastDate: DateTime(DateTime.now().year + 1),
+      borderRadius: 16,
+      theme: ThemeData(primaryColor: Colors.green),
+    );
+    setState(() {
+      date = DateFormat.yMMMMEEEEd().format(newDatetime);
+      Navigator.pop(context);
+      addItem();
+    });
+  }
+
   //display categories
   //Async means that this function is asynchronous and you might need to wait a bit to get its result.
   getAllCategories() async {
@@ -92,8 +114,8 @@ class _HomeScreen extends State<HomeScreen> {
         barrierDismissible: true,
         builder: (context) {
           return AlertDialog(
-            content:
-                Text("This exceeds the budget limit. You can't add this item."),
+            content: Text(
+                "Error. There's something wrong with your input. You can't add this item."),
             actions: <Widget>[
               FlatButton(
                 color: Colors.red,
@@ -190,14 +212,14 @@ class _HomeScreen extends State<HomeScreen> {
               SizedBox(height: 20.0),
               Container(
                 width: 300,
-                child: TextField(
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    labelText: "Date",
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0)),
-                  ),
+                child: ListTile(
+                  title: Text('$date'),
+                  leading: Icon(Icons.date_range),
+                  onTap: () {
+                    _getDate();
+                    // Navigator.pop(context);
+                    // addItem();
+                  },
                 ),
               ),
               Container(
@@ -210,16 +232,19 @@ class _HomeScreen extends State<HomeScreen> {
                   onPressed: () async {
                     //_item.id = 20 + ++temp;
                     if ((double.parse(itemAmount.text) +
-                            categoryList[x].total) >
-                        categoryList[x].max) {
+                                categoryList[x].total) >
+                            categoryList[x].max ||
+                        double.parse(itemAmount.text) <= 0) {
                       popUp(context);
                     } else {
                       _item.name = itemName.text;
                       _item.amount = double.parse(itemAmount.text);
-                      _item.datetime = 'insert datetime here';
+                      _item.datetime = date;
                       _item.catID = x;
 
                       _category.id = x;
+                      //_category.firstDate;
+                      //_category.endDate;
                       _category.max = categoryList[x].max;
                       _category.name = categoryList[x].name;
                       _category.total =
@@ -234,7 +259,7 @@ class _HomeScreen extends State<HomeScreen> {
                         print(result2);
                         print('home_screen result is $result');
                         _updateCatFromItem(_category.total, _category.id,
-                            _category.name, _category.max);
+                            _category.name, _category.max, _category.firstDate, _category.endDate);
                         Navigator.pop(context);
                       }
                       itemAmount.text = ' ';
@@ -321,19 +346,26 @@ class _HomeScreen extends State<HomeScreen> {
                     categories.forEach((category) {
                       temp++;
                     });
-                    //end of checking
-                    _category.id = temp++;
-                    _category.name = catName.text;
-                    _category.total = 0;
-                    _category.max = double.parse(catLimit.text);
-                    //print(_category.id);
-                    var result = await _categoryService.saveCategory(_category);
-                    print(result);
-                    catName.text = '';
-                    catLimit.text = '';
-                    getAllCategories();
+                    if (double.parse(catLimit.text) <= 0) {
+                      popUp(context);
+                    } else {
+                      //end of checking
+                      _category.id = temp++;
+                      //_category.firstDate;
+                      //_category.endDate;
+                      _category.name = catName.text;
+                      _category.total = 0;
+                      _category.max = double.parse(catLimit.text);
+                      //print(_category.id);
+                      var result =
+                          await _categoryService.saveCategory(_category);
+                      print(result);
+                      catName.text = '';
+                      catLimit.text = '';
+                      getAllCategories();
 
-                    Navigator.pop(context);
+                      Navigator.pop(context);
+                    }
                   },
                 ),
               ),
@@ -389,6 +421,8 @@ class _HomeScreen extends State<HomeScreen> {
                 onPressed: () async {
                   _category.id = category[0]['id'];
                   _category.name = catNameEdit.text;
+                  //_category.firstDate;
+                  //_category.endDate;
                   _category.total = category[0]['total'];
                   _category.max = double.parse(catLimitEdit.text);
 
@@ -430,11 +464,13 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   void _updateCatFromItem(
-      double tempMoney, int id, String name, double max) async {
+      double tempMoney, int id, String name, double max, String firstDate, String endDate) async {
     print('_updateCat is here: $tempMoney');
 
     _category.id = id;
     _category.name = name;
+    //_category.endDate;
+    //_category.firstDate;
     _category.total = tempMoney;
     _category.max = max;
     print('_category.total is: ${_category.total}');
@@ -644,6 +680,8 @@ class _HomeScreen extends State<HomeScreen> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 CategoryScreen(
+                                                  firstDate: categoryList[index].firstDate,
+                                                      endDate: categoryList[index].endDate,
                                                     updateCat:
                                                         _updateCatFromItem,
                                                     catMax:
@@ -659,7 +697,7 @@ class _HomeScreen extends State<HomeScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text('${categoryList[index].id}'),
+                                          // Text('${categoryList[index].id}'),
                                           Text(
                                             "${categoryList[index].name}",
                                             style: TextStyle(

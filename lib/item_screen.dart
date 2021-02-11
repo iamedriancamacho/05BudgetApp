@@ -13,9 +13,13 @@ class CategoryScreen extends StatefulWidget {
   final int catID;
   final double catMax;
   final Function updateCat;
+  final String firstDate;
+  final String endDate;
 
   CategoryScreen(
       {this.updateCat,
+        @required this.firstDate,
+      @required this.endDate,
       @required this.name,
       @required this.catID,
       @required this.catMax});
@@ -79,17 +83,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
       _cat.id = widget.catID;
       _cat.max = widget.catMax;
       _cat.name = widget.name;
+      _cat.firstDate = widget.firstDate;
+      _cat.endDate = widget.endDate;
       _cat.total = tempMoney;
       print('_cat.total is: ${_cat.total}');
 
       var result2 = await _categoryService.updateCategory(_cat);
       print(result2);
-      widget.updateCat(tempMoney, _cat.id, _cat.name, _cat.max);
+      widget.updateCat(tempMoney, _cat.id, _cat.name, _cat.max, _cat.firstDate, _cat.endDate);
     }
   }
 
-  getDate() {
-    setState(() async {
+  _getDate() async {
+    //DateTime date;
       newDatetime = await showRoundedDatePicker(
         context: context,
         initialDate: DateTime.now(),
@@ -99,8 +105,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
         borderRadius: 16,
         theme: ThemeData(primaryColor: Colors.green),
       );
-      date = DateFormat.yMMMMEEEEd().format(newDatetime);
-    });
+      setState(() {
+        date = DateFormat.yMMMMEEEEd().format(newDatetime);
+        Navigator.pop(context);
+        addItem();
+      });
   }
 
   Widget addItem() {
@@ -152,20 +161,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
               SizedBox(height: 20.0),
               Container(
                 width: 300,
-                child: TextField(
-                  decoration: InputDecoration(
-                    prefixIcon: IconButton(
-                      icon: Icon(Icons.calendar_today),
-                      onPressed: () {
-                        getDate();
-                      },
-                    ),
-                    contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    labelText: "$date",
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0)),
-                  ),
-                  
+                child: ListTile(
+                  title: Text('$date'),
+                  leading: Icon(Icons.date_range),
+                  onTap: (){
+                    _getDate();
+                    // Navigator.pop(context);
+                    // addItem();
+                  },
                 ),
               ),
               Container(
@@ -183,12 +186,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     //_item.id is AUTOINCREMENT
                     if (double.parse(itemAmount.text) > widget.catMax ||
                         (double.parse(itemAmount.text) + tempMoney) >
-                            widget.catMax) {
+                            widget.catMax || double.parse(itemAmount.text) <=0) {
                       popUp(context);
                     } else {
                       _item.name = itemName.text;
                       _item.amount = double.parse(itemAmount.text);
-                      _item.datetime = 'insert datetime here';
+                      _item.datetime = date;
                       _item.catID = widget.catID;
 
                       var result = await itemService.saveItem(_item);
@@ -237,7 +240,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         builder: (context) {
           return AlertDialog(
             content:
-                Text("This exceeds the budget limit. You can't add this item."),
+                Text("Error. There seems to be a problem with your input. You can't add this item."),
             actions: <Widget>[
               FlatButton(
                 color: Colors.red,
@@ -450,9 +453,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                               fontWeight: FontWeight.w400,
                                               fontSize: 25.0),
                                         ),
-                                        leading: Text('${itemList[index].id}'),
+                                        // leading: Text('${itemList[index].id}'),
                                         subtitle: Text(
-                                            'categoryID: ${itemList[index].catID} \n*dapat datetime ni sha*'),
+                                            '${itemList[index].datetime}'),
                                         trailing: Text(
                                             " -₱ ${itemList[index].amount}",
                                             style:

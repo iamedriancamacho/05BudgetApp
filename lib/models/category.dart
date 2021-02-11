@@ -5,6 +5,8 @@ class Category{
   String name;
   double total;
   double max;
+  String firstDate;
+  String endDate;
 
   categoryMap() {
     var map = Map<String, dynamic>();
@@ -13,6 +15,8 @@ class Category{
     map['name'] = name;
     map['total'] = total;
     map['max'] = max;
+    map['firstDate'] = firstDate;
+    map['endDate'] = endDate;
     return map;
   }
 }
