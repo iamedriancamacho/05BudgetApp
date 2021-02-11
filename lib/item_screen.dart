@@ -5,6 +5,8 @@ import 'package:budget/services/item_service.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/widgets/radial_painter.dart';
 import 'package:budget/helpers/color_helper.dart';
+import 'package:flutter_rounded_date_picker/rounded_picker.dart';
+import 'package:intl/intl.dart';
 
 class CategoryScreen extends StatefulWidget {
   final String name;
@@ -32,7 +34,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
   double tempMoney = 0;
   var countMoney = 0;
   double percent;
-
+  DateTime newDatetime;
+  String date = "Add Date";
   @override
   void initState() {
     super.initState();
@@ -85,6 +88,21 @@ class _CategoryScreenState extends State<CategoryScreen> {
     }
   }
 
+  getDate() {
+    setState(() async {
+      newDatetime = await showRoundedDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        initialDatePickerMode: DatePickerMode.day,
+        firstDate: DateTime(DateTime.now().year - 1),
+        lastDate: DateTime(DateTime.now().year + 1),
+        borderRadius: 16,
+        theme: ThemeData(primaryColor: Colors.green),
+      );
+      date = DateFormat.yMMMMEEEEd().format(newDatetime);
+    });
+  }
+
   Widget addItem() {
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
@@ -135,13 +153,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
               Container(
                 width: 300,
                 child: TextField(
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
+                    prefixIcon: IconButton(
+                      icon: Icon(Icons.calendar_today),
+                      onPressed: () {
+                        getDate();
+                      },
+                    ),
                     contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    labelText: "Date",
+                    labelText: "$date",
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0)),
                   ),
+                  
                 ),
               ),
               Container(
@@ -182,6 +206,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       itemAmount.text = '';
                       Navigator.pop(context);
                       getAllItems();
+                      date = "Add Date";
                     }
                   },
                 ),

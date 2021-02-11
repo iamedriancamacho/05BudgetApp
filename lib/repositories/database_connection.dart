@@ -16,6 +16,6 @@ class DatabaseConnection {
         "CREATE TABLE CAT(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, total REAL NOT NULL, max REAL NOT NULL)");
 
     await database.execute(
-        "CREATE TABLE ITEM(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, datetime TEXT, amount REAL, catID INTEGER)");
+        "CREATE TABLE ITEM(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, datetime DATETIME, amount REAL, catID INTEGER)");
   }
 }

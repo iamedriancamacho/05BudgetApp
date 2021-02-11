@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 class Item {
   int id;
   String name;
-  String datetime;
+  DateTime datetime;
   double amount;
   int catID;
 

@@ -7,6 +7,8 @@ import 'package:flutter/widgets.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'item_screen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class HomeScreen extends StatefulWidget {
   final String title;
@@ -24,6 +26,7 @@ class _HomeScreen extends State<HomeScreen> {
   var _categoryService = CategoryService(); //accessing catService;
   var category; //global var from _editCat
   int catNumber = 10; //for id
+  DateTime currentWeek = new DateTime.now();
 
   //dropdown
   int x; //get ID of list
@@ -377,7 +380,7 @@ class _HomeScreen extends State<HomeScreen> {
                 child: Text("Cancel"),
                 onPressed: () {
                   Navigator.pop(context);
-                  Navigator.pop(context);
+                  //Navigator.pop(context);
                 },
               ),
               FlatButton(
@@ -445,6 +448,39 @@ class _HomeScreen extends State<HomeScreen> {
     }
   }
 
+  Widget chart(perc) {
+    // for the weekly chart
+    return Expanded(
+      child: Column(
+        children: <Widget>[
+          Text(""),
+        ],
+      ),
+    );
+    /*
+    return Stack(
+      children: <Widget>[
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
+          ),
+          width: 10,
+          height: 100,
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
+          ),
+          width: 10,
+          height: perc,
+        ),
+      ],
+    );
+    */
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -509,10 +545,17 @@ class _HomeScreen extends State<HomeScreen> {
                               IconButton(
                                 icon: Icon(Icons.keyboard_arrow_left),
                                 iconSize: 30.0,
-                                onPressed: () {},
+                                onPressed: () {
+                                  setState(() {
+                                    currentWeek =
+                                        currentWeek.subtract(Duration(days: 6));
+                                    print("${currentWeek.day}");
+                                  });
+                                },
                               ),
-                              Text(
-                                'Feb 10.2020 - Feb 16.2020',
+                              AutoSizeText(
+                                '${DateFormat.yMd().format(currentWeek)} - ${DateFormat.yMd().format(currentWeek.add(Duration(days: 6)))}',
+                                maxLines: 1,
                                 style: TextStyle(
                                     fontFamily: "Jose",
                                     fontSize: 15.0,
@@ -521,11 +564,22 @@ class _HomeScreen extends State<HomeScreen> {
                               IconButton(
                                 icon: Icon(Icons.keyboard_arrow_right),
                                 iconSize: 30.0,
-                                onPressed: () {},
+                                onPressed: () {
+                                  setState(() {
+                                    currentWeek =
+                                        currentWeek.add(Duration(days: 6));
+                                  });
+                                },
                               ),
                             ],
                           ),
-                          SizedBox(height: 30.0),
+                          Row(
+                            children: <Widget>[
+                              Column(
+                                children: <Widget>[],
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
