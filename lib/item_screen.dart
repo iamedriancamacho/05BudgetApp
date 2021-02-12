@@ -18,7 +18,7 @@ class CategoryScreen extends StatefulWidget {
 
   CategoryScreen(
       {this.updateCat,
-        @required this.firstDate,
+      @required this.firstDate,
       @required this.endDate,
       @required this.name,
       @required this.catID,
@@ -86,30 +86,37 @@ class _CategoryScreenState extends State<CategoryScreen> {
       _cat.firstDate = widget.firstDate;
       _cat.endDate = widget.endDate;
       _cat.total = tempMoney;
-      print('_cat.total is: ${_cat.total}');
+      _cat.firstDate = widget.firstDate;
+      _cat.endDate = widget.endDate;
+
+      print("FirstDay = ${widget.firstDate}");
+      print("SecondDay = ${widget.endDate}");
 
       var result2 = await _categoryService.updateCategory(_cat);
       print(result2);
-      widget.updateCat(tempMoney, _cat.id, _cat.name, _cat.max, _cat.firstDate, _cat.endDate);
+      
+      widget.updateCat(tempMoney, _cat.id, _cat.name, _cat.max, _cat.firstDate,
+          _cat.endDate);
+          
     }
   }
 
   _getDate() async {
     //DateTime date;
-      newDatetime = await showRoundedDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        initialDatePickerMode: DatePickerMode.day,
-        firstDate: DateTime(DateTime.now().year - 1),
-        lastDate: DateTime(DateTime.now().year + 1),
-        borderRadius: 16,
-        theme: ThemeData(primaryColor: Colors.green),
-      );
-      setState(() {
-        date = DateFormat.yMMMMEEEEd().format(newDatetime);
-        Navigator.pop(context);
-        addItem();
-      });
+    newDatetime = await showRoundedDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      initialDatePickerMode: DatePickerMode.day,
+      firstDate: DateTime(DateTime.now().year - 1),
+      lastDate: DateTime(DateTime.now().year + 1),
+      borderRadius: 16,
+      theme: ThemeData(primaryColor: Colors.green),
+    );
+    setState(() {
+      date = DateFormat.yMMMMEEEEd().format(newDatetime);
+      Navigator.pop(context);
+      addItem();
+    });
   }
 
   Widget addItem() {
@@ -164,7 +171,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 child: ListTile(
                   title: Text('$date'),
                   leading: Icon(Icons.date_range),
-                  onTap: (){
+                  onTap: () {
                     _getDate();
                     // Navigator.pop(context);
                     // addItem();
@@ -186,7 +193,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     //_item.id is AUTOINCREMENT
                     if (double.parse(itemAmount.text) > widget.catMax ||
                         (double.parse(itemAmount.text) + tempMoney) >
-                            widget.catMax || double.parse(itemAmount.text) <=0) {
+                            widget.catMax ||
+                        double.parse(itemAmount.text) <= 0) {
                       popUp(context);
                     } else {
                       _item.name = itemName.text;
@@ -239,8 +247,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
         barrierDismissible: true,
         builder: (context) {
           return AlertDialog(
-            content:
-                Text("Error. There seems to be a problem with your input. You can't add this item."),
+            content: Text(
+                "Error. There seems to be a problem with your input. You can't add this item."),
             actions: <Widget>[
               FlatButton(
                 color: Colors.red,
@@ -454,8 +462,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                               fontSize: 25.0),
                                         ),
                                         // leading: Text('${itemList[index].id}'),
-                                        subtitle: Text(
-                                            '${itemList[index].datetime}'),
+                                        subtitle:
+                                            Text('${itemList[index].datetime}'),
                                         trailing: Text(
                                             " -₱ ${itemList[index].amount}",
                                             style:

@@ -28,9 +28,10 @@ class _HomeScreen extends State<HomeScreen> {
   var category; //global var from _editCat
   int catNumber = 10; //for id
   DateTime newDatetime;
+  String firstDay, secondDay;
   String date = "Add Date";
-  DateTime currentWeek = new DateTime.now();
-
+  DateTime firstDayWeek = new DateTime.now()
+      .subtract(new Duration(days: DateTime.now().weekday - 1));
   //dropdown
   int x; //get ID of list
   String dropdownValue;
@@ -41,8 +42,18 @@ class _HomeScreen extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+
     checkItems(); //counts items
     getAllCategories(); //gets categories
+    setDate();
+  }
+
+  setDate() {
+    firstDay = DateFormat.yMd().format(firstDayWeek);
+    secondDay =
+        DateFormat.yMd().format(firstDayWeek.add(new Duration(days: 6)));
+    print("INIT First Day $firstDay");
+    print("INIT Second Day $secondDay");
   }
 
   //checks if items exist
@@ -96,12 +107,20 @@ class _HomeScreen extends State<HomeScreen> {
         catModel.id = category['id'];
         catModel.name = category['name'];
 
-        catDropDownList.add(catModel.name);
-        print('my itemList is ${catModel.name}');
-
         catModel.total = category['total'];
         catModel.max = category['max'];
-        categoryList.add(catModel);
+        catModel.firstDate = category['firstDate'];
+        catModel.endDate = category['endDate'];
+
+        if (firstDay == catModel.firstDate && secondDay == catModel.endDate) {
+          categoryList.add(catModel);
+          catDropDownList.add(catModel.name);
+          print('my itemList is ${catModel.name}');
+
+          print("xd");
+          print("$firstDay == ${catModel.firstDate}");
+          print("$secondDay == ${catModel.endDate}");
+        }
       });
 
       print('catDropdownlist.length: ${catDropDownList.length}');
@@ -249,8 +268,8 @@ class _HomeScreen extends State<HomeScreen> {
                       _category.name = categoryList[x].name;
                       _category.total =
                           double.parse(itemAmount.text) + categoryList[x].total;
-                      print('_category.total is: ${_category.total}');
-
+                      _category.firstDate = firstDay;
+                      _category.endDate = secondDay;
                       var result = await itemService.saveItem(_item);
                       var result2 =
                           await _categoryService.updateCategory(_category);
@@ -258,8 +277,13 @@ class _HomeScreen extends State<HomeScreen> {
                         print(result);
                         print(result2);
                         print('home_screen result is $result');
-                        _updateCatFromItem(_category.total, _category.id,
-                            _category.name, _category.max, _category.firstDate, _category.endDate);
+                        _updateCatFromItem(
+                            _category.total,
+                            _category.id,
+                            _category.name,
+                            _category.max,
+                            _category.firstDate,
+                            _category.endDate);
                         Navigator.pop(context);
                       }
                       itemAmount.text = ' ';
@@ -357,6 +381,11 @@ class _HomeScreen extends State<HomeScreen> {
                       _category.total = 0;
                       _category.max = double.parse(catLimit.text);
                       //print(_category.id);
+                      print("ADD CAT FIRST DAY $firstDay");
+                      _category.firstDate = firstDay;
+                      _category.endDate = secondDay;
+                      print("CATEGORY FIRST DAY ${_category.firstDate}");
+                      print("CATEGORY SECOND DAY ${_category.endDate}");
                       var result =
                           await _categoryService.saveCategory(_category);
                       print(result);
@@ -425,7 +454,8 @@ class _HomeScreen extends State<HomeScreen> {
                   //_category.endDate;
                   _category.total = category[0]['total'];
                   _category.max = double.parse(catLimitEdit.text);
-
+                  _category.firstDate = firstDay;
+                  _category.endDate = secondDay;
                   var result = await _categoryService.updateCategory(_category);
                   if (result > 0) {
                     print('RESULT is $result');
@@ -463,8 +493,8 @@ class _HomeScreen extends State<HomeScreen> {
         });
   }
 
-  void _updateCatFromItem(
-      double tempMoney, int id, String name, double max, String firstDate, String endDate) async {
+  void _updateCatFromItem(double tempMoney, int id, String name, double max,
+      String firstDate, String endDate) async {
     print('_updateCat is here: $tempMoney');
 
     _category.id = id;
@@ -473,6 +503,8 @@ class _HomeScreen extends State<HomeScreen> {
     //_category.firstDate;
     _category.total = tempMoney;
     _category.max = max;
+    _category.firstDate = firstDay;
+    _category.endDate = secondDay;
     print('_category.total is: ${_category.total}');
 
     var result2 = await _categoryService.updateCategory(_category);
@@ -583,14 +615,22 @@ class _HomeScreen extends State<HomeScreen> {
                                 iconSize: 30.0,
                                 onPressed: () {
                                   setState(() {
-                                    currentWeek =
-                                        currentWeek.subtract(Duration(days: 6));
-                                    print("${currentWeek.day}");
+                                    firstDayWeek = firstDayWeek
+                                        .subtract(new Duration(days: 7));
+                                    print("$firstDayWeek");
+                                    firstDay =
+                                        DateFormat.yMd().format(firstDayWeek);
+                                    secondDay = DateFormat.yMd().format(
+                                        firstDayWeek
+                                            .add(new Duration(days: 6)));
+                                    print("LEFT FIRST DAY <== $firstDay");
+                                    print("LEFT SECOND DAY <== $secondDay");
+                                    getAllCategories();
                                   });
                                 },
                               ),
                               AutoSizeText(
-                                '${DateFormat.yMd().format(currentWeek)} - ${DateFormat.yMd().format(currentWeek.add(Duration(days: 6)))}',
+                                '${DateFormat.yMd().format(firstDayWeek)} - ${DateFormat.yMd().format(firstDayWeek.add(new Duration(days: 6)))}',
                                 maxLines: 1,
                                 style: TextStyle(
                                     fontFamily: "Jose",
@@ -602,8 +642,16 @@ class _HomeScreen extends State<HomeScreen> {
                                 iconSize: 30.0,
                                 onPressed: () {
                                   setState(() {
-                                    currentWeek =
-                                        currentWeek.add(Duration(days: 6));
+                                    firstDayWeek =
+                                        firstDayWeek.add(new Duration(days: 7));
+                                    firstDay =
+                                        DateFormat.yMd().format(firstDayWeek);
+                                    secondDay = DateFormat.yMd().format(
+                                        firstDayWeek
+                                            .add(new Duration(days: 6)));
+                                    print("RIGHT FIRST DAY <== $firstDay");
+                                    print("RIGHT SECOND DAY <== $secondDay");
+                                    getAllCategories();
                                   });
                                 },
                               ),
@@ -680,8 +728,11 @@ class _HomeScreen extends State<HomeScreen> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 CategoryScreen(
-                                                  firstDate: categoryList[index].firstDate,
-                                                      endDate: categoryList[index].endDate,
+                                                    firstDate:
+                                                        categoryList[index]
+                                                            .firstDate,
+                                                    endDate: categoryList[index]
+                                                        .endDate,
                                                     updateCat:
                                                         _updateCatFromItem,
                                                     catMax:
