@@ -1,6 +1,8 @@
 import 'package:budget/repositories/database_connection.dart';
 import 'package:sqflite/sqflite.dart';
 
+int count;
+
 class Repository {
   DatabaseConnection _databaseConnection;
 
@@ -36,6 +38,13 @@ class Repository {
     return await connection.query(table, where: 'id=?', whereArgs: [id]);
   }
 
+//check if table exist
+  checkExist(table) async {
+    var connection = await finaldb;
+    return count = Sqflite.firstIntValue(
+        await connection.rawQuery('SELECT COUNT(*) FROM $table'));
+  }
+
   //update data from table
   updateData(table, data) async {
     var connection = await finaldb;
@@ -50,5 +59,10 @@ class Repository {
         .rawDelete("DELETE FROM $table WHERE id = $categoryID");
   }
 
-
+// update specific data in a row
+  updateDataByValue(table,data,value) async {
+    var connection = await finaldb;
+    return await connection
+        .update(table, data, where: 'firstWeek=$value', whereArgs: [data['firstWeek']]);
+  }
 }

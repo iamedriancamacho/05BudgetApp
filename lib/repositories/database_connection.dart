@@ -17,5 +17,8 @@ class DatabaseConnection {
 
     await database.execute(
         "CREATE TABLE ITEM(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, datetime TEXT NOT NULL, amount REAL NOT NULL, catID INTEGER NOT NULL)");
+  
+     await database.execute(
+        "CREATE TABLE DAYS(id INTEGER PRIMARY KEY AUTOINCREMENT, firstWeek TEXT NOT NULL, monday REAL NOT NULL,  tuesday REAL NOT NULL,  wednesday REAL NOT NULL, thursday REAL NOT NULL,friday REAL NOT NULL, saturday REAL NOT NULL, sunday REAL NOT NULL)");
   }
 }

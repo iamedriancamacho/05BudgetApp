@@ -1,13 +1,21 @@
 import 'package:flutter/widgets.dart';
 
-class Category{
+class Category {
   int id;
   String name;
   double total;
   double max;
   String firstDate;
   String endDate;
-
+  /*
+  double monday;
+  double tuesday;
+  double wednesday;
+  double thursday;
+  double friday;
+  double saturday;
+  double sunday;
+  */
   categoryMap() {
     var map = Map<String, dynamic>();
 
@@ -17,6 +25,15 @@ class Category{
     map['max'] = max;
     map['firstDate'] = firstDate;
     map['endDate'] = endDate;
+    /*
+    map['monday'] = monday;
+    map['monday'] = monday;
+    map['monday'] = monday;
+    map['monday'] = monday;
+    map['monday'] = monday;
+    map['monday'] = monday;
+    map['monday'] = monday;
+    */
     return map;
   }
 }
@@ -30,4 +47,3 @@ final catLimit = TextEditingController();
 //edit textfields
 final catNameEdit = TextEditingController();
 final catLimitEdit = TextEditingController();
-
