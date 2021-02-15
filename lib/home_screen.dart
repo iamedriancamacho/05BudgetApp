@@ -1030,6 +1030,8 @@ class _HomeScreen extends State<HomeScreen> {
                                       categoryList[index].max);
                                   // getCategories();
                                   _edit(context);
+                                } else {
+                                  getAllCategories();
                                 }
                                 //cannot delete category
                               },
@@ -1093,7 +1095,18 @@ class _HomeScreen extends State<HomeScreen> {
                                       subtitle: progressBar(
                                           categoryList[index].total,
                                           categoryList[index].max),
-                                      leading: Text("${listDays[0].id}"),
+                                      leading: Container(
+                                        width: 50.0,
+                                        height: 100.0,
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.blue,
+                                          foregroundColor: Colors.black,
+                                          child: Text(
+                                            "${categoryList[index].name[0]}",
+                                            style: TextStyle(fontSize: 30.0),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
