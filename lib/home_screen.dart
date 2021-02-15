@@ -1,6 +1,7 @@
 import 'package:budget/models/category.dart';
 import 'package:budget/models/item.dart';
 import 'package:budget/services/category_service.dart';
+import 'package:budget/services/daysServices.dart';
 import 'package:budget/services/item_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_rounded_date_picker/rounded_picker.dart';
+import 'package:budget/models/days.dart';
 
 class HomeScreen extends StatefulWidget {
   final String title;
@@ -27,6 +29,8 @@ class _HomeScreen extends State<HomeScreen> {
   var _categoryService = CategoryService(); //accessing catService;
   var category; //global var from _editCat
   int catNumber = 10; //for id
+  var _days = Days();
+  var _dayService = DaysService();
   DateTime newDatetime;
   String firstDay, secondDay;
   String date = "Add Date";
@@ -42,18 +46,17 @@ class _HomeScreen extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
     checkItems(); //counts items
     getAllCategories(); //gets categories
     setDate();
+    initDays();
+    getAllDays();
   }
 
   setDate() {
     firstDay = DateFormat.yMd().format(firstDayWeek);
     secondDay =
         DateFormat.yMd().format(firstDayWeek.add(new Duration(days: 6)));
-    print("INIT First Day $firstDay");
-    print("INIT Second Day $secondDay");
   }
 
   //checks if items exist
@@ -115,16 +118,232 @@ class _HomeScreen extends State<HomeScreen> {
         if (firstDay == catModel.firstDate && secondDay == catModel.endDate) {
           categoryList.add(catModel);
           catDropDownList.add(catModel.name);
-          print('my itemList is ${catModel.name}');
-
-          print("xd");
-          print("$firstDay == ${catModel.firstDate}");
-          print("$secondDay == ${catModel.endDate}");
         }
       });
-
-      print('catDropdownlist.length: ${catDropDownList.length}');
     });
+  }
+
+  initDays() async {
+    int resultDays = await _dayService.checkTable();
+
+    if (resultDays == 0) {
+      print("FIRST TIME RUN!");
+      _days.firstWeek = firstDay;
+      _days.monday = 0.0;
+      _days.tuesday = 0.0;
+      _days.wednesday = 0.0;
+      _days.thursday = 0.0;
+      _days.friday = 0.0;
+      _days.saturday = 0.0;
+      _days.sunday = 0.0;
+      var resultDays = await _dayService.saveDays(_days);
+      var readDays1 = await _dayService.readDays();
+      readDays1.forEach((days) {
+        print("INIT ID");
+        daysIndex = days['id'];
+        print("DAYSINDEX FOR FIRST");
+        print("$daysIndex");
+      });
+
+      if (listDays.isEmpty) {
+        print("INIT LIST DAYS");
+        setState(() {
+          listDays.add(_days);
+          print("INIT ID = ${listDays[0].id}");
+          print("INIT ID = ${listDays[0].firstWeek}");
+        });
+
+        print("LIST LENGTH INIT${listDays.length}");
+      }
+
+      print("RESULT DAYS $resultDays DAYS IS ADDED! FIRST DAY == $firstDay");
+    }
+  }
+
+  getAllDays() async {
+    var days = await _dayService.readDays();
+
+    setState(() {
+      days.forEach((daysWeek) {
+        var daysModel = Days();
+        daysModel.id = daysWeek["id"];
+        daysModel.firstWeek = daysWeek["firstWeek"];
+        daysModel.monday = daysWeek["monday"];
+        daysModel.tuesday = daysWeek["tuesday"];
+        daysModel.wednesday = daysWeek["wednesday"];
+        daysModel.thursday = daysWeek["thursday"];
+        daysModel.friday = daysWeek["friday"];
+        daysModel.saturday = daysWeek["saturday"];
+        daysModel.sunday = daysWeek["sunday"];
+
+        if (firstDay == daysModel.firstWeek) {
+          chek = daysModel.monday;
+
+          setState(() {
+            listDays.clear();
+            listDays.add(daysModel);
+            daysIndex = daysWeek['id'];
+            double total = daysModel.monday +
+                daysModel.tuesday +
+                daysModel.wednesday +
+                daysModel.thursday +
+                daysModel.friday +
+                daysModel.saturday +
+                daysModel.sunday;
+            print("TOTAL $total");
+            if (total == 0) {
+              mon = 0;
+              tue = 0;
+              wed = 0;
+              thu = 0;
+              fri = 0;
+              sat = 0;
+              sun = 0;
+            } else {
+              print("asd");
+              mon = (daysModel.monday / total) * 100;
+              tue = (daysModel.tuesday / total) * 100;
+              wed = (daysModel.wednesday / total) * 100;
+              thu = (daysModel.thursday / total) * 100;
+              fri = (daysModel.friday / total) * 100;
+              sat = (daysModel.saturday / total) * 100;
+              sun = (daysModel.sunday / total) * 100;
+            }
+            print("SUNDAY $sun");
+            print("LISTDAYS HOME ${listDays.length}");
+
+            /*
+            mon.clear();
+            tue.clear();
+            wed.clear();
+            thu.clear();
+            fri.clear();
+            sat.clear();
+            sun.clear();
+            mon.add(daysModel.monday);
+            tue.add(daysModel.tuesday);
+            wed.add(daysModel.wednesday);
+            thu.add(daysModel.thursday);
+            fri.add(daysModel.friday);
+            sat.add(daysModel.saturday);
+            sun.add(daysModel.sunday);
+            */
+          });
+        }
+      });
+    });
+  }
+
+  String getDayString(String day) {
+    StringBuffer sb = new StringBuffer();
+    String newDay;
+    for (int i = 0; i < day.length; i++) {
+      if (day[i] != ",") {
+        sb.write(day[i]);
+      } else
+        break;
+    }
+    newDay = sb.toString();
+    return newDay;
+  }
+
+  updateWeek() async {
+    var daysModel4 = Days();
+    print("FIRST DAY $firstDay");
+    var daysWeek1 = await _dayService.readDays();
+    // print("CURRENT DAY ${widget.firstDate}");
+    daysWeek1.forEach((days) {
+      if (firstDay == days['firstWeek']) {
+        if (getDayString(_item.datetime) == "Monday") {
+          var temp = days['monday'];
+          daysModel4.monday = temp + double.parse(itemAmount.text);
+          daysModel4.id = days['id'];
+          daysModel4.firstWeek = days['firstWeek'];
+          daysModel4.tuesday = days['tuesday'];
+          daysModel4.wednesday = days['wednesday'];
+          daysModel4.thursday = days['thursday'];
+          daysModel4.friday = days['friday'];
+          daysModel4.saturday = days['saturday'];
+          daysModel4.sunday = days['sunday'];
+          print("DAYSMODEL MONDAY ${daysModel4.monday}");
+        } else if (getDayString(_item.datetime) == "Tuesday") {
+          var temp = days['tuesday'];
+          daysModel4.tuesday = temp + double.parse(itemAmount.text);
+          daysModel4.id = days['id'];
+          daysModel4.firstWeek = days['firstWeek'];
+          daysModel4.monday = days['monday'];
+          daysModel4.wednesday = days['wednesday'];
+          daysModel4.thursday = days['thursday'];
+          daysModel4.friday = days['friday'];
+          daysModel4.saturday = days['saturday'];
+          daysModel4.sunday = days['sunday'];
+          print("DAYSMODEL tue ${daysModel4.tuesday}");
+        } else if (getDayString(_item.datetime) == "Wednesday") {
+          var temp = days['wednesday'];
+          daysModel4.wednesday = temp + double.parse(itemAmount.text);
+          daysModel4.id = days['id'];
+          daysModel4.firstWeek = days['firstWeek'];
+          daysModel4.monday = days['monday'];
+          daysModel4.tuesday = days['tuesday'];
+          daysModel4.thursday = days['thursday'];
+          daysModel4.friday = days['friday'];
+          daysModel4.saturday = days['saturday'];
+          daysModel4.sunday = days['sunday'];
+          print("DAYSMODEL wed ${daysModel4.wednesday}");
+        } else if (getDayString(_item.datetime) == "Thursday") {
+          var temp = days['thursday'];
+          daysModel4.thursday = temp + double.parse(itemAmount.text);
+          daysModel4.id = days['id'];
+          daysModel4.firstWeek = days['firstWeek'];
+          daysModel4.monday = days['monday'];
+          daysModel4.tuesday = days['tuesday'];
+          daysModel4.wednesday = days['wednesday'];
+          daysModel4.friday = days['friday'];
+          daysModel4.saturday = days['saturday'];
+          daysModel4.sunday = days['sunday'];
+          print("DAYSMODEL thu ${daysModel4.thursday}");
+        } else if (getDayString(_item.datetime) == "Friday") {
+          var temp = days['friday'];
+          daysModel4.friday = temp + double.parse(itemAmount.text);
+          daysModel4.id = days['id'];
+          daysModel4.firstWeek = days['firstWeek'];
+          daysModel4.monday = days['monday'];
+          daysModel4.tuesday = days['tuesday'];
+          daysModel4.wednesday = days['wednesday'];
+          daysModel4.thursday = days['thursday'];
+          daysModel4.saturday = days['saturday'];
+          daysModel4.sunday = days['sunday'];
+          print("DAYSMODEL fri ${daysModel4.friday}");
+        } else if (getDayString(_item.datetime) == "Saturday") {
+          var temp = days['saturday'];
+          daysModel4.saturday = temp + double.parse(itemAmount.text);
+          daysModel4.id = days['id'];
+          daysModel4.firstWeek = days['firstWeek'];
+          daysModel4.monday = days['monday'];
+          daysModel4.tuesday = days['tuesday'];
+          daysModel4.wednesday = days['wednesday'];
+          daysModel4.thursday = days['thursday'];
+          daysModel4.friday = days['friday'];
+          daysModel4.sunday = days['sunday'];
+          print("DAYSMODEL sat ${daysModel4.saturday}");
+        } else if (getDayString(_item.datetime) == "Sunday") {
+          var temp = days['sunday'];
+          daysModel4.sunday = temp + double.parse(itemAmount.text);
+          daysModel4.id = days['id'];
+          daysModel4.firstWeek = days['firstWeek'];
+          daysModel4.monday = days['monday'];
+          daysModel4.tuesday = days['tuesday'];
+          daysModel4.wednesday = days['wednesday'];
+          daysModel4.thursday = days['thursday'];
+          daysModel4.saturday = days['saturday'];
+          daysModel4.friday = days['friday'];
+          print("DAYSMODEL sun ${daysModel4.sunday}");
+        }
+      }
+    });
+    var result2 = await _dayService.updateDays(daysModel4);
+    print(result2);
+    getAllDays();
   }
 
   popUp(BuildContext context) {
@@ -260,7 +479,9 @@ class _HomeScreen extends State<HomeScreen> {
                       _item.amount = double.parse(itemAmount.text);
                       _item.datetime = date;
                       _item.catID = x;
-
+                      updateWeek();
+                      listDays.clear();
+                      getAllDays();
                       _category.id = x;
                       //_category.firstDate;
                       //_category.endDate;
@@ -273,10 +494,10 @@ class _HomeScreen extends State<HomeScreen> {
                       var result = await itemService.saveItem(_item);
                       var result2 =
                           await _categoryService.updateCategory(_category);
+                      getAllDays();
                       if (result > 0) {
                         print(result);
                         print(result2);
-                        print('home_screen result is $result');
                         _updateCatFromItem(
                             _category.total,
                             _category.id,
@@ -286,8 +507,10 @@ class _HomeScreen extends State<HomeScreen> {
                             _category.endDate);
                         Navigator.pop(context);
                       }
+
                       itemAmount.text = ' ';
                       itemName.text = ' ';
+                      date = "Add Date";
                     }
                   },
                 ),
@@ -301,11 +524,46 @@ class _HomeScreen extends State<HomeScreen> {
   Widget progressBar(double total, double max) {
     return LinearPercentIndicator(
       padding: EdgeInsets.symmetric(vertical: 20.0),
-      lineHeight: 8.0,
+      lineHeight: 15.0,
       percent: total / max,
       progressColor: Colors.orange,
       backgroundColor: Colors.grey,
     );
+  }
+
+  saveDays() async {
+    bool go = false;
+    var readDay = await _dayService.readDays();
+    setState(() {
+      readDay.forEach((daysWeek) {
+        if (daysWeek['firstWeek'] != firstDay) {
+          _days.firstWeek = firstDay;
+          _days.monday = 0.0;
+          _days.tuesday = 0.0;
+          _days.wednesday = 0.0;
+          _days.thursday = 0.0;
+          _days.friday = 0.0;
+          _days.saturday = 0.0;
+          _days.sunday = 0.0;
+          print("FIRST DAY $firstDay");
+          print("ADDED ${_days.firstWeek}");
+          go = true;
+        } else {
+          go = false;
+          print("Already Exist");
+        }
+      });
+    });
+    if (go && listDays.isNotEmpty) {
+      var resultDays = await _dayService.saveDays(_days);
+      readDay.forEach((d) {
+        print("INDECES");
+        var temp = d['id'];
+        print(temp);
+      });
+      print(resultDays);
+    }
+    //  print(resultDays);
   }
 
   //insert category
@@ -388,11 +646,19 @@ class _HomeScreen extends State<HomeScreen> {
                       print("CATEGORY SECOND DAY ${_category.endDate}");
                       var result =
                           await _categoryService.saveCategory(_category);
+                      getAllDays();
                       print(result);
                       catName.text = '';
                       catLimit.text = '';
                       getAllCategories();
+                      // add days
 
+                      setState(() {
+                        saveDays();
+                        getAllDays();
+                      });
+
+                      // end add days
                       Navigator.pop(context);
                     }
                   },
@@ -516,37 +782,55 @@ class _HomeScreen extends State<HomeScreen> {
     }
   }
 
-  Widget chart(perc) {
+  Widget chart(double perc, String day, double price) {
     // for the weekly chart
-    return Expanded(
-      child: Column(
-        children: <Widget>[
-          Text(""),
-        ],
-      ),
-    );
-    /*
-    return Stack(
+
+    return Column(
       children: <Widget>[
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
-          ),
-          width: 10,
-          height: 100,
+        AutoSizeText(
+          "₱ $price",
+          maxLines: 1,
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
-          ),
-          width: 10,
-          height: perc,
+        Stack(
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.blueGrey[200],
+                borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
+              ),
+              width: 15,
+              height: 100,
+            ),
+            Container(
+              //alignment: Alignment.bottomCenter,
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
+              ),
+              width: 15,
+              height: perc,
+            ),
+          ],
+        ),
+        AutoSizeText(
+          "$day",
+          maxLines: 1,
         ),
       ],
     );
-    */
+  }
+
+  checkForContent(String firstDay) async {
+    var result = await _dayService.readDays();
+    result.forEach((day) {
+      if (day['firstWeek'] == firstDay) {
+        content = true;
+        print("TABLE EXIST!");
+      } else {
+        print("NO TABLES FOR THIS WEEK YET");
+        content = false;
+      }
+    });
   }
 
   @override
@@ -580,7 +864,7 @@ class _HomeScreen extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(vertical: 20.0),
           child: Column(
             children: <Widget>[
-              Text('${itemList.length}'),
+              // Text('${itemList.length}'),
               SizedBox(height: 20.0),
               Center(
                 child: Container(
@@ -615,6 +899,14 @@ class _HomeScreen extends State<HomeScreen> {
                                 iconSize: 30.0,
                                 onPressed: () {
                                   setState(() {
+                                    mon = 0;
+                                    tue = 0;
+                                    wed = 0;
+                                    thu = 0;
+                                    fri = 0;
+                                    sat = 0;
+                                    sun = 0;
+                                    // to the left
                                     firstDayWeek = firstDayWeek
                                         .subtract(new Duration(days: 7));
                                     print("$firstDayWeek");
@@ -625,7 +917,9 @@ class _HomeScreen extends State<HomeScreen> {
                                             .add(new Duration(days: 6)));
                                     print("LEFT FIRST DAY <== $firstDay");
                                     print("LEFT SECOND DAY <== $secondDay");
+                                    checkForContent(firstDay);
                                     getAllCategories();
+                                    getAllDays();
                                   });
                                 },
                               ),
@@ -642,6 +936,16 @@ class _HomeScreen extends State<HomeScreen> {
                                 iconSize: 30.0,
                                 onPressed: () {
                                   setState(() {
+                                    mon = 0;
+                                    tue = 0;
+                                    wed = 0;
+                                    thu = 0;
+                                    fri = 0;
+                                    sat = 0;
+                                    sun = 0;
+
+                                    // to the right
+
                                     firstDayWeek =
                                         firstDayWeek.add(new Duration(days: 7));
                                     firstDay =
@@ -651,18 +955,43 @@ class _HomeScreen extends State<HomeScreen> {
                                             .add(new Duration(days: 6)));
                                     print("RIGHT FIRST DAY <== $firstDay");
                                     print("RIGHT SECOND DAY <== $secondDay");
+                                    checkForContent(firstDay);
                                     getAllCategories();
+                                    getAllDays();
                                   });
                                 },
                               ),
                             ],
                           ),
-                          Row(
-                            children: <Widget>[
-                              Column(
-                                children: <Widget>[],
-                              ),
-                            ],
+                          //  chart(20.0),
+                          Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                listDays.length == 0 || categoryList.length == 0
+                                    ? Text("")
+                                    : chart(mon, "MON", listDays[0].monday),
+                                listDays.length == 0 || categoryList.length == 0
+                                    ? Text("")
+                                    : chart(tue, "TUE", listDays[0].tuesday),
+                                listDays.length == 0 || categoryList.length == 0
+                                    ? Text("")
+                                    : chart(wed, "WED", listDays[0].wednesday),
+                                listDays.length == 0 || categoryList.length == 0
+                                    ? Text("Ahhww it's empty!")
+                                    : chart(thu, "THU", listDays[0].thursday),
+                                listDays.length == 0 || categoryList.length == 0
+                                    ? Text("")
+                                    : chart(fri, "FRI", listDays[0].friday),
+                                listDays.length == 0 || categoryList.length == 0
+                                    ? Text("")
+                                    : chart(sat, "SAT", listDays[0].saturday),
+                                listDays.length == 0 || categoryList.length == 0
+                                    ? Text("")
+                                    : chart(sun, "SUN", listDays[0].sunday),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -701,9 +1030,8 @@ class _HomeScreen extends State<HomeScreen> {
                                       categoryList[index].max);
                                   // getCategories();
                                   _edit(context);
-                                } else {
-                                  //cannot delete category
                                 }
+                                //cannot delete category
                               },
                               child: Center(
                                 child: Container(
@@ -765,6 +1093,7 @@ class _HomeScreen extends State<HomeScreen> {
                                       subtitle: progressBar(
                                           categoryList[index].total,
                                           categoryList[index].max),
+                                      leading: Text("${listDays[0].id}"),
                                     ),
                                   ),
                                 ),
