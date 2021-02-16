@@ -37,3 +37,5 @@ double mon = 0.0,
 int daysIndex;
 int lengthCat = 0;
 bool content = false;
+DateTime dis1, dis2;
+String daysUpdate;

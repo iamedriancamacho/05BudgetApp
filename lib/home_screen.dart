@@ -1,3 +1,5 @@
+import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:budget/models/category.dart';
 import 'package:budget/models/item.dart';
 import 'package:budget/services/category_service.dart';
@@ -29,18 +31,20 @@ class _HomeScreen extends State<HomeScreen> {
   var _categoryService = CategoryService(); //accessing catService;
   var category; //global var from _editCat
   int catNumber = 10; //for id
-  var _days = Days();
-  var _dayService = DaysService();
+  var _days = Days(); // for accessing values inside days class
+  var _dayService =
+      DaysService(); // for accessing functions inside the dayservice class
   DateTime newDatetime;
-  String firstDay, secondDay;
-  String date = "Add Date";
+  String firstDay,
+      secondDay; // utility variables for getting the first week and second week
+  String date = "Add Date"; // inital string value for adding dates
   DateTime firstDayWeek = new DateTime.now()
       .subtract(new Duration(days: DateTime.now().weekday - 1));
   //dropdown
   int x; //get ID of list
   String dropdownValue;
   List<String> catDropDownList = [];
-
+  double percent;
   //end of variables
 
   @override
@@ -48,9 +52,9 @@ class _HomeScreen extends State<HomeScreen> {
     super.initState();
     checkItems(); //counts items
     getAllCategories(); //gets categories
-    setDate();
-    initDays();
-    getAllDays();
+    setDate(); // set the initial value for firstweek and second week
+    initDays(); // initialize values for weekly spending chart
+    getAllDays(); // appending values inside weekly spending chart to a list
   }
 
   setDate() {
@@ -78,8 +82,9 @@ class _HomeScreen extends State<HomeScreen> {
     });
   }
 
-  //getDate
+  //let user input date
   _getDate() async {
+    bool go = false;
     //DateTime date;
     newDatetime = await showRoundedDatePicker(
       context: context,
@@ -88,12 +93,65 @@ class _HomeScreen extends State<HomeScreen> {
       firstDate: DateTime(DateTime.now().year - 1),
       lastDate: DateTime(DateTime.now().year + 1),
       borderRadius: 16,
-      theme: ThemeData(primaryColor: Colors.green),
+      theme: ThemeData(
+        accentColor: Colors.green,
+        dialogBackgroundColor: Colors.green[50],
+        disabledColor: Colors.red,
+      ),
+      imageHeader: AssetImage("assets/images/novigrad.jpg"),
+      description: "**You can only add dates from $firstDay to $secondDay**",
+      // disabling first the allowed dates
+      listDateDisabled: [
+        dis2.subtract(new Duration(days: 0)),
+        dis2.subtract(new Duration(days: 1)),
+        dis2.subtract(new Duration(days: 2)),
+        dis2.subtract(new Duration(days: 3)),
+        dis2.subtract(new Duration(days: 4)),
+        dis2.subtract(new Duration(days: 5)),
+        dis2.subtract(new Duration(days: 6)),
+      ],
+      // then if tapped, check if avail, if not then, it's allowed
+      textPositiveButton: "SAVE",
+      textNegativeButton: "",
+      onTapDay: (DateTime dateTime, bool available) {
+        if (available) {
+          available = false;
+          showDialog(
+              context: context,
+              barrierDismissible: true,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text("You can't add this date."),
+                  actions: <Widget>[
+                    FlatButton(
+                      color: Colors.red,
+                      child: Text("Ok"),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _getDate();
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                );
+              });
+        } else {
+          available = true;
+          go = true;
+        }
+        return available;
+      },
     );
     setState(() {
-      date = DateFormat.yMMMMEEEEd().format(newDatetime);
-      Navigator.pop(context);
-      addItem();
+      // if date is allowed then proceed in storing values
+      if (go) {
+        date = DateFormat.yMMMMEEEEd().format(newDatetime);
+        //  day = DateFormat.EEEE().format(newDatetime).toString();
+        Navigator.pop(context);
+        addItem();
+        getAllDays();
+      } else
+        date = "Add Date";
     });
   }
 
@@ -102,25 +160,24 @@ class _HomeScreen extends State<HomeScreen> {
   getAllCategories() async {
     categoryList = List<Category>();
     var categories = await _categoryService.readCategories();
-
+    int count = 0;
     catDropDownList.clear();
-    setState(() {
-      categories.forEach((category) {
-        var catModel = Category();
-        catModel.id = category['id'];
-        catModel.name = category['name'];
+    categories.forEach((category) {
+      var catModel = Category();
+      catModel.id = category['id'];
+      catModel.name = category['name'];
+      catModel.total = category['total'];
+      catModel.max = category['max'];
+      catModel.firstDate = category['firstDate'];
+      catModel.endDate = category['endDate'];
+      print("FORST DAY $firstDay");
 
-        catModel.total = category['total'];
-        catModel.max = category['max'];
-        catModel.firstDate = category['firstDate'];
-        catModel.endDate = category['endDate'];
-
-        if (firstDay == catModel.firstDate && secondDay == catModel.endDate) {
-          categoryList.add(catModel);
-          catDropDownList.add(catModel.name);
-        }
-      });
+      if (firstDay == catModel.firstDate) {
+        categoryList.add(catModel);
+        catDropDownList.add(catModel.name);
+      }
     });
+    print("SuLOD $count");
   }
 
   initDays() async {
@@ -234,6 +291,7 @@ class _HomeScreen extends State<HomeScreen> {
     });
   }
 
+// extracting the day in the date format "yMd"
   String getDayString(String day) {
     StringBuffer sb = new StringBuffer();
     String newDay;
@@ -247,6 +305,7 @@ class _HomeScreen extends State<HomeScreen> {
     return newDay;
   }
 
+// updating the values inside the weekly spending chart.
   updateWeek() async {
     var daysModel4 = Days();
     print("FIRST DAY $firstDay");
@@ -346,14 +405,15 @@ class _HomeScreen extends State<HomeScreen> {
     getAllDays();
   }
 
+// for popup
   popUp(BuildContext context) {
     return showDialog(
         context: context,
         barrierDismissible: true,
         builder: (context) {
           return AlertDialog(
-            content: Text(
-                "Error. There's something wrong with your input. You can't add this item."),
+            content: Text("Oops! Check your inputs again.",
+                textAlign: TextAlign.left),
             actions: <Widget>[
               FlatButton(
                 color: Colors.red,
@@ -368,7 +428,9 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   //add item using category screen
+
   addItem() {
+    print("TAP CATDROP $catDropDownList");
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
@@ -384,7 +446,7 @@ class _HomeScreen extends State<HomeScreen> {
                 width: MediaQuery.of(context).size.width / 1.4,
                 child: DropdownButton<String>(
                   isExpanded: true,
-                  value: dropdownValue,
+                  //  value: dropdownValue,
                   icon: Icon(Icons.keyboard_arrow_down),
                   iconSize: 30,
                   style: TextStyle(color: Theme.of(context).accentColor),
@@ -403,10 +465,12 @@ class _HomeScreen extends State<HomeScreen> {
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       onTap: () {
-                        x = catDropDownList.indexOf(value);
-                        print('onTap: $x');
+                        setState(() {
+                          x = catDropDownList.indexOf(value);
+                          print('onTap: $x');
+                        });
                       },
-                      value: value,
+                      value: dropdownValue,
                       child: Text(value),
                     );
                   }).toList(),
@@ -438,6 +502,10 @@ class _HomeScreen extends State<HomeScreen> {
                 width: 300,
                 child: TextField(
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,2}')),
+                  ],
                   controller: itemAmount,
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -479,32 +547,49 @@ class _HomeScreen extends State<HomeScreen> {
                       _item.amount = double.parse(itemAmount.text);
                       _item.datetime = date;
                       _item.catID = x;
-                      updateWeek();
+                      print("CAT ID IS ${_item.catID}");
+                      print("CATDOWNLIST = $catDropDownList");
+
                       listDays.clear();
+                      updateWeek();
                       getAllDays();
-                      _category.id = x;
-                      //_category.firstDate;
-                      //_category.endDate;
-                      _category.max = categoryList[x].max;
-                      _category.name = categoryList[x].name;
-                      _category.total =
-                          double.parse(itemAmount.text) + categoryList[x].total;
-                      _category.firstDate = firstDay;
-                      _category.endDate = secondDay;
+                      var catM = Category();
+                      print("FIRST DATE FOR ITEMCAT ${_category.firstDate}");
                       var result = await itemService.saveItem(_item);
+                      var result3 = await _categoryService.readCategories();
+                      result3.forEach((cat) {
+                        catM.id = cat['id'];
+                        if (x == catM.id) {
+                          _category.id = x;
+                          _category.max = categoryList[x].max;
+                          _category.name = categoryList[x].name;
+                          _category.total = double.parse(itemAmount.text) +
+                              categoryList[x].total;
+                          _category.firstDate = categoryList[x].firstDate;
+                          _category.endDate = categoryList[x].endDate;
+
+                          print("X DAY ${categoryList[x].firstDate}");
+                        }
+                      });
                       var result2 =
                           await _categoryService.updateCategory(_category);
-                      getAllDays();
+                      getAllCategories();
+                      print("RESULT FOR UPDATECAT = $result2");
+
                       if (result > 0) {
                         print(result);
-                        print(result2);
-                        _updateCatFromItem(
-                            _category.total,
-                            _category.id,
-                            _category.name,
-                            _category.max,
-                            _category.firstDate,
-                            _category.endDate);
+                        //  getAllItems(_category);
+                        /*
+                        if (firstDay == categoryList[x].firstDate) {
+                          _updateCatFromItem(
+                              _category.total,
+                              _category.id,
+                              _category.name,
+                              _category.max,
+                              _category.firstDate,
+                              _category.endDate);
+                        }
+*/
                         Navigator.pop(context);
                       }
 
@@ -605,6 +690,10 @@ class _HomeScreen extends State<HomeScreen> {
                 child: TextField(
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   controller: catLimit,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,2}')),
+                  ],
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                     labelText: "Enter a Budget Limit",
@@ -622,56 +711,64 @@ class _HomeScreen extends State<HomeScreen> {
                     style: TextStyle(fontSize: 17.0),
                   ),
                   onPressed: () async {
-                    //for checking
-                    int temp = 0;
-                    var categories = await _categoryService.readCategories();
-                    categories.forEach((category) {
-                      temp++;
-                    });
-                    if (double.parse(catLimit.text) <= 0) {
+                    if (catName.text.isEmpty || catLimit.text.isEmpty) {
                       popUp(context);
                     } else {
-                      //end of checking
-                      _category.id = temp++;
-                      //_category.firstDate;
-                      //_category.endDate;
-                      _category.name = catName.text;
-                      _category.total = 0;
-                      _category.max = double.parse(catLimit.text);
-                      //print(_category.id);
-                      print("ADD CAT FIRST DAY $firstDay");
-                      _category.firstDate = firstDay;
-                      _category.endDate = secondDay;
-                      print("CATEGORY FIRST DAY ${_category.firstDate}");
-                      print("CATEGORY SECOND DAY ${_category.endDate}");
-                      var result =
-                          await _categoryService.saveCategory(_category);
-                      getAllDays();
-                      print(result);
-                      catName.text = '';
-                      catLimit.text = '';
-                      getAllCategories();
-                      // add days
-
-                      setState(() {
-                        saveDays();
-                        getAllDays();
+                      //for checking
+                      int temp = 0;
+                      var categories = await _categoryService.readCategories();
+                      categories.forEach((category) {
+                        temp++;
                       });
+                      if (double.parse(catLimit.text) <= 0) {
+                        popUp(context);
+                      } else {
+                        //end of checking
 
-                      // end add days
-                      Navigator.pop(context);
+                        _category.id = temp++;
+                        //_category.firstDate;
+                        //_category.endDate;
+                        _category.name = catName.text;
+                        _category.total = 0;
+                        _category.max = double.parse(catLimit.text);
+                        //print(_category.id);
+                        print("ADD CAT FIRST DAY $firstDay");
+                        _category.firstDate = firstDay;
+                        _category.endDate = secondDay;
+                        print("CATEGORY FIRST DAY ${_category.firstDate}");
+                        print("CATEGORY SECOND DAY ${_category.endDate}");
+                        var result =
+                            await _categoryService.saveCategory(_category);
+
+                        print(result);
+                        catName.text = '';
+                        catLimit.text = '';
+                        getAllCategories();
+                        getAllDays();
+                        // add days
+
+                        setState(() {
+                          saveDays();
+                        });
+
+                        // end add days
+                        Navigator.pop(context);
+                      }
                     }
                   },
                 ),
               ),
+              /*
               catDropDownList.length > 0
                   ? FlatButton(
                       child: Text('I already have a category'),
                       onPressed: () {
+                        print("I already $firstDay");
                         Navigator.pop(context);
                         addItem();
                       })
-                  : Text(':)'),
+                      */
+              Text(' '),
               SizedBox(height: 20.0),
             ],
           );
@@ -707,7 +804,7 @@ class _HomeScreen extends State<HomeScreen> {
                 child: Text("Cancel"),
                 onPressed: () {
                   Navigator.pop(context);
-                  //Navigator.pop(context);
+                  Navigator.pop(context);
                 },
               ),
               FlatButton(
@@ -726,8 +823,7 @@ class _HomeScreen extends State<HomeScreen> {
                   if (result > 0) {
                     print('RESULT is $result');
                     Navigator.pop(context);
-                    Navigator.pop(context); //idk ngano duha ka pop HUHUHU
-                    //list.clear();
+                    Navigator.pop(context);
                     getAllCategories();
                   }
                 },
@@ -759,26 +855,74 @@ class _HomeScreen extends State<HomeScreen> {
         });
   }
 
-  void _updateCatFromItem(double tempMoney, int id, String name, double max,
+/*
+  getAllItems(Category cat) async {
+    // var daysModel = Days();
+    double total = 0;
+    int countMoney = 0;
+
+    itemList = List<Item>();
+    var items = await _itemService.readItem();
+
+    setState(() {
+      items.forEach((category) {
+        var itemModel = Item();
+        itemModel.id = category['id'];
+        itemModel.name = category['name'];
+        itemModel.datetime = category['datetime'];
+        itemModel.amount = category['amount'];
+        itemModel.catID = category['catID'];
+        //checks if catID is correct
+        if (itemModel.catID == cat.id) {
+          itemList.add(itemModel);
+          countMoney++;
+        }
+      });
+      if (itemList.isNotEmpty) {
+        for (int i = 0; i < countMoney; i++) {
+          total += itemList[i].amount;
+        }
+        print("TOTAL FOR MONDAY $total");
+        percent = total / cat.max;
+      }
+    });
+    if (total > 0) {
+      _category.id = cat.id;
+      _category.max = cat.max;
+      _category.name = cat.name;
+      _category.firstDate = cat.firstDate;
+      _category.endDate = cat.endDate;
+      _category.total = cat.total;
+      _category.firstDate = cat.firstDate;
+      _category.endDate = cat.endDate;
+
+      var result2 = await _categoryService.updateCategory(_category);
+      getAllCategories();
+      print(result2);
+    }
+  }
+*/
+  _updateCatFromItem(double tempMoney, int id, String name, double max,
       String firstDate, String endDate) async {
-    print('_updateCat is here: $tempMoney');
+    //var result1 = await _categoryService.readCategories();
 
     _category.id = id;
     _category.name = name;
-    //_category.endDate;
-    //_category.firstDate;
     _category.total = tempMoney;
     _category.max = max;
     _category.firstDate = firstDay;
     _category.endDate = secondDay;
+
+    print('_updateCat is here: $tempMoney');
+
     print('_category.total is: ${_category.total}');
 
     var result2 = await _categoryService.updateCategory(_category);
+    setState(() {
+      getAllCategories();
+    });
     if (result2 > 0) {
       print('result2 is $result2');
-      setState(() {
-        getAllCategories();
-      });
     }
   }
 
@@ -820,19 +964,6 @@ class _HomeScreen extends State<HomeScreen> {
     );
   }
 
-  checkForContent(String firstDay) async {
-    var result = await _dayService.readDays();
-    result.forEach((day) {
-      if (day['firstWeek'] == firstDay) {
-        content = true;
-        print("TABLE EXIST!");
-      } else {
-        print("NO TABLES FOR THIS WEEK YET");
-        content = false;
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -855,6 +986,7 @@ class _HomeScreen extends State<HomeScreen> {
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {
+                print("appbar $firstDay");
                 addCategory();
               },
             ),
@@ -906,10 +1038,15 @@ class _HomeScreen extends State<HomeScreen> {
                                     fri = 0;
                                     sat = 0;
                                     sun = 0;
-                                    // to the left
+                                    // TO THE LEFT
+
                                     firstDayWeek = firstDayWeek
                                         .subtract(new Duration(days: 7));
                                     print("$firstDayWeek");
+                                    dis1 = firstDayWeek
+                                        .subtract(new Duration(days: 7));
+                                    dis2 =
+                                        firstDayWeek.add(new Duration(days: 6));
                                     firstDay =
                                         DateFormat.yMd().format(firstDayWeek);
                                     secondDay = DateFormat.yMd().format(
@@ -917,7 +1054,7 @@ class _HomeScreen extends State<HomeScreen> {
                                             .add(new Duration(days: 6)));
                                     print("LEFT FIRST DAY <== $firstDay");
                                     print("LEFT SECOND DAY <== $secondDay");
-                                    checkForContent(firstDay);
+
                                     getAllCategories();
                                     getAllDays();
                                   });
@@ -944,18 +1081,23 @@ class _HomeScreen extends State<HomeScreen> {
                                     sat = 0;
                                     sun = 0;
 
-                                    // to the right
+                                    // TO THE RIGHT
 
                                     firstDayWeek =
                                         firstDayWeek.add(new Duration(days: 7));
+                                    dis1 =
+                                        firstDayWeek.add(new Duration(days: 7));
+
                                     firstDay =
                                         DateFormat.yMd().format(firstDayWeek);
                                     secondDay = DateFormat.yMd().format(
                                         firstDayWeek
                                             .add(new Duration(days: 6)));
+                                    dis2 =
+                                        firstDayWeek.add(new Duration(days: 6));
                                     print("RIGHT FIRST DAY <== $firstDay");
                                     print("RIGHT SECOND DAY <== $secondDay");
-                                    checkForContent(firstDay);
+
                                     getAllCategories();
                                     getAllDays();
                                   });
@@ -1095,11 +1237,16 @@ class _HomeScreen extends State<HomeScreen> {
                                       subtitle: progressBar(
                                           categoryList[index].total,
                                           categoryList[index].max),
+
+                                      /*
+                                      subtitle: Text(
+                                          "${categoryList[index].firstDate}"),
+                                           */
                                       leading: Container(
                                         width: 50.0,
                                         height: 100.0,
                                         child: CircleAvatar(
-                                          backgroundColor: Colors.blue,
+                                          backgroundColor: Colors.orange,
                                           foregroundColor: Colors.black,
                                           child: Text(
                                             "${categoryList[index].name[0]}",

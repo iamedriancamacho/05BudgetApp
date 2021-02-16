@@ -9,6 +9,7 @@ import 'package:flutter_rounded_date_picker/rounded_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:budget/models/days.dart';
 import 'package:budget/services/daysServices.dart';
+import 'package:flutter/services.dart';
 
 class CategoryScreen extends StatefulWidget {
   final String name;
@@ -51,6 +52,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
     getAllItems();
   }
 
+// accessing values from table Days and appending to list
+// calculation of weekyl spending chart
   getAllDays() async {
     var days = await _daysService.readDays();
     var daysModel2 = Days();
@@ -156,10 +159,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
         percent = tempMoney / widget.catMax;
       }
     });
-
-    //var result = await _daysService.updateDaysValue(daysModel, widget.firstDate);
-    // print(result);
-    //print("TOTAL FOR MONDAY $globalAm");
     if (tempMoney > 0) {
       _cat.id = widget.catID;
       _cat.max = widget.catMax;
@@ -192,29 +191,77 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   _getDate() async {
+    bool go = false;
     //DateTime date;
     newDatetime = await showRoundedDatePicker(
       context: context,
       initialDate: DateTime.now(),
       initialDatePickerMode: DatePickerMode.day,
-      // firstDate: DateTime(DateTime.now().year - 1),
-      // lastDate: DateTime(DateTime.now().year + 1),
+      firstDate: DateTime(DateTime.now().month),
+      lastDate: DateTime(DateTime.now().year + 1),
       borderRadius: 16,
-      theme: ThemeData(primaryColor: Colors.green),
+      theme: ThemeData(
+        accentColor: Colors.green,
+        dialogBackgroundColor: Colors.green[50],
+        disabledColor: Colors.red,
+      ),
+      imageHeader: AssetImage("assets/images/novigrad.jpg"),
+      description: "1 + 1 = 2",
+// disabling first the allowed dates
       listDateDisabled: [
-        firstDayWeek = new DateTime.now()
-            .subtract(new Duration(days: DateTime.now().weekday - 1)),
+        dis2.subtract(new Duration(days: 0)),
+        dis2.subtract(new Duration(days: 1)),
+        dis2.subtract(new Duration(days: 2)),
+        dis2.subtract(new Duration(days: 3)),
+        dis2.subtract(new Duration(days: 4)),
+        dis2.subtract(new Duration(days: 5)),
+        dis2.subtract(new Duration(days: 6)),
       ],
+      // then if tapped, check if avail, if not then it's allowed
+      onTapDay: (DateTime dateTime, bool available) {
+        if (available) {
+          available = false;
+          showDialog(
+              context: context,
+              barrierDismissible: true,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text("You can't add this date."),
+                  actions: <Widget>[
+                    FlatButton(
+                      color: Colors.red,
+                      child: Text("Ok"),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _getDate();
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                );
+              });
+        } else {
+          available = true;
+          go = true;
+        }
+        return available;
+      },
+      textPositiveButton: "SAVE",
+      textNegativeButton: "",
     );
+
     setState(() {
-      date = DateFormat.yMMMMEEEEd().format(newDatetime);
-      day = DateFormat.EEEE().format(newDatetime).toString();
-      Navigator.pop(context);
-      addItem();
-      getAllDays();
+      if (go) {
+        date = DateFormat.yMMMMEEEEd().format(newDatetime);
+        Navigator.pop(context);
+        addItem();
+        getAllDays();
+      } else
+        date = "Add Date";
     });
   }
 
+// function for adding items 
   Widget addItem() {
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
@@ -253,6 +300,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 child: TextField(
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   controller: itemAmount,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,2}')),
+                  ],
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                     labelText: "Enter an Amount",
@@ -268,7 +319,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   title: Text('$date'),
                   leading: Icon(Icons.date_range),
                   onTap: () {
+                    print("DIS 1 $dis1");
+                    print("DIS 2 $dis2");
                     _getDate();
+
                     // Navigator.pop(context);
                     // addItem();
                   },
@@ -283,149 +337,145 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                   onPressed: () async {
                     //for checking
+                    if (date == "Add Date" ||
+                        itemAmount.text.isEmpty ||
+                        itemName.text.isEmpty) {
+                      popUp(context);
+                    } else {
+                      if (double.parse(itemAmount.text) > widget.catMax ||
+                          (double.parse(itemAmount.text) + tempMoney) >
+                              widget.catMax ||
+                          double.parse(itemAmount.text) <= 0) {
+                        popUp(context);
+                      } else {
+                        _item.name = itemName.text;
+                        _item.amount = double.parse(itemAmount.text);
+                        _item.datetime = date;
+                        _item.catID = widget.catID;
+                        var daysModel3 = Days();
+                        var result = await itemService.saveItem(_item);
+                        var daysWeek1 = await _daysService.readDays();
+                        print("CURRENT DAY ${widget.firstDate}");
+                        daysWeek1.forEach((days) {
+                          if (widget.firstDate == days['firstWeek']) {
+                            if (getDayString(_item.datetime) == "Monday") {
+                              var temp = days['monday'];
+                              daysModel3.monday =
+                                  temp + double.parse(itemAmount.text);
+                              daysModel3.id = days['id'];
+                              daysModel3.firstWeek = days['firstWeek'];
+                              daysModel3.tuesday = days['tuesday'];
+                              daysModel3.wednesday = days['wednesday'];
+                              daysModel3.thursday = days['thursday'];
+                              daysModel3.friday = days['friday'];
+                              daysModel3.saturday = days['saturday'];
+                              daysModel3.sunday = days['sunday'];
+                              print("DAYSMODEL MONDAY ${daysModel3.monday}");
+                            } else if (getDayString(_item.datetime) ==
+                                "Tuesday") {
+                              var temp = days['tuesday'];
+                              daysModel3.tuesday =
+                                  temp + double.parse(itemAmount.text);
+                              daysModel3.id = days['id'];
+                              daysModel3.firstWeek = days['firstWeek'];
+                              daysModel3.monday = days['monday'];
+                              daysModel3.wednesday = days['wednesday'];
+                              daysModel3.thursday = days['thursday'];
+                              daysModel3.friday = days['friday'];
+                              daysModel3.saturday = days['saturday'];
+                              daysModel3.sunday = days['sunday'];
+                              print("DAYSMODEL tue ${daysModel3.tuesday}");
+                            } else if (getDayString(_item.datetime) ==
+                                "Wednesday") {
+                              var temp = days['wednesday'];
+                              daysModel3.wednesday =
+                                  temp + double.parse(itemAmount.text);
+                              daysModel3.id = days['id'];
+                              daysModel3.firstWeek = days['firstWeek'];
+                              daysModel3.monday = days['monday'];
+                              daysModel3.tuesday = days['tuesday'];
+                              daysModel3.thursday = days['thursday'];
+                              daysModel3.friday = days['friday'];
+                              daysModel3.saturday = days['saturday'];
+                              daysModel3.sunday = days['sunday'];
+                              print("DAYSMODEL wed ${daysModel3.wednesday}");
+                            } else if (getDayString(_item.datetime) ==
+                                "Thursday") {
+                              var temp = days['thursday'];
+                              daysModel3.thursday =
+                                  temp + double.parse(itemAmount.text);
+                              daysModel3.id = days['id'];
+                              daysModel3.firstWeek = days['firstWeek'];
+                              daysModel3.monday = days['monday'];
+                              daysModel3.tuesday = days['tuesday'];
+                              daysModel3.wednesday = days['wednesday'];
+                              daysModel3.friday = days['friday'];
+                              daysModel3.saturday = days['saturday'];
+                              daysModel3.sunday = days['sunday'];
+                              print("DAYSMODEL thu ${daysModel3.thursday}");
+                            } else if (getDayString(_item.datetime) ==
+                                "Friday") {
+                              var temp = days['friday'];
+                              daysModel3.friday =
+                                  temp + double.parse(itemAmount.text);
+                              daysModel3.id = days['id'];
+                              daysModel3.firstWeek = days['firstWeek'];
+                              daysModel3.monday = days['monday'];
+                              daysModel3.tuesday = days['tuesday'];
+                              daysModel3.wednesday = days['wednesday'];
+                              daysModel3.thursday = days['thursday'];
+                              daysModel3.saturday = days['saturday'];
+                              daysModel3.sunday = days['sunday'];
+                              print("DAYSMODEL fri ${daysModel3.friday}");
+                            } else if (getDayString(_item.datetime) ==
+                                "Saturday") {
+                              var temp = days['saturday'];
+                              daysModel3.saturday =
+                                  temp + double.parse(itemAmount.text);
+                              daysModel3.id = days['id'];
+                              daysModel3.firstWeek = days['firstWeek'];
+                              daysModel3.monday = days['monday'];
+                              daysModel3.tuesday = days['tuesday'];
+                              daysModel3.wednesday = days['wednesday'];
+                              daysModel3.thursday = days['thursday'];
+                              daysModel3.friday = days['friday'];
+                              daysModel3.sunday = days['sunday'];
+                              print("DAYSMODEL sat ${daysModel3.saturday}");
+                            } else if (getDayString(_item.datetime) ==
+                                "Sunday") {
+                              var temp = days['sunday'];
+                              daysModel3.sunday =
+                                  temp + double.parse(itemAmount.text);
+                              daysModel3.id = days['id'];
+                              daysModel3.firstWeek = days['firstWeek'];
+                              daysModel3.monday = days['monday'];
+                              daysModel3.tuesday = days['tuesday'];
+                              daysModel3.wednesday = days['wednesday'];
+                              daysModel3.thursday = days['thursday'];
+                              daysModel3.saturday = days['saturday'];
+                              daysModel3.friday = days['friday'];
+                              print("DAYSMODEL sun ${daysModel3.sunday}");
+                            }
+                          }
+                        });
+                        var result2 = await _daysService.updateDays(daysModel3);
+                        getAllDays();
+                        print(result2);
+                        if (result > 0) {
+                          print('RESULT1 is $result');
+                        }
 
+                        itemName.text = '';
+                        itemAmount.text = '';
+                        Navigator.pop(context);
+                        getAllItems();
+
+                        date = "Add Date";
+                      }
+                    }
                     //end of checking
 
                     //_item.id is AUTOINCREMENT
-                    if (double.parse(itemAmount.text) > widget.catMax ||
-                        (double.parse(itemAmount.text) + tempMoney) >
-                            widget.catMax ||
-                        double.parse(itemAmount.text) <= 0) {
-                      popUp(context);
-                    } else {
-                      _item.name = itemName.text;
-                      _item.amount = double.parse(itemAmount.text);
-                      _item.datetime = date;
-                      _item.catID = widget.catID;
-                      var daysModel3 = Days();
-                      var result = await itemService.saveItem(_item);
-                      var daysWeek1 = await _daysService.readDays();
-                      print("CURRENT DAY ${widget.firstDate}");
-                      daysWeek1.forEach((days) {
-                        if (widget.firstDate == days['firstWeek']) {
-                          if (getDayString(_item.datetime) == "Monday") {
-                            var temp = days['monday'];
-                            daysModel3.monday =
-                                temp + double.parse(itemAmount.text);
-                            daysModel3.id = days['id'];
-                            daysModel3.firstWeek = days['firstWeek'];
-                            daysModel3.tuesday = days['tuesday'];
-                            daysModel3.wednesday = days['wednesday'];
-                            daysModel3.thursday = days['thursday'];
-                            daysModel3.friday = days['friday'];
-                            daysModel3.saturday = days['saturday'];
-                            daysModel3.sunday = days['sunday'];
-                            print("DAYSMODEL MONDAY ${daysModel3.monday}");
-                          } else if (getDayString(_item.datetime) ==
-                              "Tuesday") {
-                            var temp = days['tuesday'];
-                            daysModel3.tuesday =
-                                temp + double.parse(itemAmount.text);
-                            daysModel3.id = days['id'];
-                            daysModel3.firstWeek = days['firstWeek'];
-                            daysModel3.monday = days['monday'];
-                            daysModel3.wednesday = days['wednesday'];
-                            daysModel3.thursday = days['thursday'];
-                            daysModel3.friday = days['friday'];
-                            daysModel3.saturday = days['saturday'];
-                            daysModel3.sunday = days['sunday'];
-                            print("DAYSMODEL tue ${daysModel3.tuesday}");
-                          } else if (getDayString(_item.datetime) ==
-                              "Wednesday") {
-                            var temp = days['wednesday'];
-                            daysModel3.wednesday =
-                                temp + double.parse(itemAmount.text);
-                            daysModel3.id = days['id'];
-                            daysModel3.firstWeek = days['firstWeek'];
-                            daysModel3.monday = days['monday'];
-                            daysModel3.tuesday = days['tuesday'];
-                            daysModel3.thursday = days['thursday'];
-                            daysModel3.friday = days['friday'];
-                            daysModel3.saturday = days['saturday'];
-                            daysModel3.sunday = days['sunday'];
-                            print("DAYSMODEL wed ${daysModel3.wednesday}");
-                          } else if (getDayString(_item.datetime) ==
-                              "Thursday") {
-                            var temp = days['thursday'];
-                            daysModel3.thursday =
-                                temp + double.parse(itemAmount.text);
-                            daysModel3.id = days['id'];
-                            daysModel3.firstWeek = days['firstWeek'];
-                            daysModel3.monday = days['monday'];
-                            daysModel3.tuesday = days['tuesday'];
-                            daysModel3.wednesday = days['wednesday'];
-                            daysModel3.friday = days['friday'];
-                            daysModel3.saturday = days['saturday'];
-                            daysModel3.sunday = days['sunday'];
-                            print("DAYSMODEL thu ${daysModel3.thursday}");
-                          } else if (getDayString(_item.datetime) == "Friday") {
-                            var temp = days['friday'];
-                            daysModel3.friday =
-                                temp + double.parse(itemAmount.text);
-                            daysModel3.id = days['id'];
-                            daysModel3.firstWeek = days['firstWeek'];
-                            daysModel3.monday = days['monday'];
-                            daysModel3.tuesday = days['tuesday'];
-                            daysModel3.wednesday = days['wednesday'];
-                            daysModel3.thursday = days['thursday'];
-                            daysModel3.saturday = days['saturday'];
-                            daysModel3.sunday = days['sunday'];
-                            print("DAYSMODEL fri ${daysModel3.friday}");
-                          } else if (getDayString(_item.datetime) ==
-                              "Saturday") {
-                            var temp = days['saturday'];
-                            daysModel3.saturday =
-                                temp + double.parse(itemAmount.text);
-                            daysModel3.id = days['id'];
-                            daysModel3.firstWeek = days['firstWeek'];
-                            daysModel3.monday = days['monday'];
-                            daysModel3.tuesday = days['tuesday'];
-                            daysModel3.wednesday = days['wednesday'];
-                            daysModel3.thursday = days['thursday'];
-                            daysModel3.friday = days['friday'];
-                            daysModel3.sunday = days['sunday'];
-                            print("DAYSMODEL sat ${daysModel3.saturday}");
-                          } else if (getDayString(_item.datetime) == "Sunday") {
-                            var temp = days['sunday'];
-                            daysModel3.sunday =
-                                temp + double.parse(itemAmount.text);
-                            daysModel3.id = days['id'];
-                            daysModel3.firstWeek = days['firstWeek'];
-                            daysModel3.monday = days['monday'];
-                            daysModel3.tuesday = days['tuesday'];
-                            daysModel3.wednesday = days['wednesday'];
-                            daysModel3.thursday = days['thursday'];
-                            daysModel3.saturday = days['saturday'];
-                            daysModel3.friday = days['friday'];
-                            print("DAYSMODEL sun ${daysModel3.sunday}");
-                          }
-                        }
-                      });
-                      var result2 = await _daysService.updateDays(daysModel3);
-
-                      getAllDays();
-
-                      print(result2);
-                      if (result > 0) {
-                        print('RESULT1 is $result');
-                        // Navigator.pop(context);
-                        //Navigator.pop(context); //idk ngano duha ka pop HUHUHU
-                        //list.clear();
-                        //getAllCategories();
-                        //widget.updateCat(tempMoney);
-                      }
-
-                      // add days in week
-
-                      // end adding of days
-
-                      itemName.text = '';
-                      itemAmount.text = '';
-                      Navigator.pop(context);
-                      getAllItems();
-
-                      date = "Add Date";
-                    }
                   },
                 ),
               ),
@@ -435,6 +485,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return Container();
   }
 
+// for updating weekly spending values
   editWeek(String date, double amount) async {
     var daysModel3 = Days();
     var daysWeek1 = await _daysService.readDays();
@@ -535,6 +586,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     print(result2);
   }
 
+// for updating weekly spending values
   deductWeek(String date, double amount) async {
     var daysModel3 = Days();
     var daysWeek1 = await _daysService.readDays();
@@ -648,6 +700,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     _editL(context);
   }
 
+// for popup dialog
   popUp(BuildContext context) {
     return showDialog(
         context: context,
@@ -669,6 +722,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         });
   }
 
+// for editing items
   _editL(BuildContext context) {
     return showDialog(
         context: context,
@@ -696,7 +750,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   } else {
                     _item.id = item[0]['id'];
                     _item.name = itemNameEdit.text;
-                    _item.datetime = " insert datetime here";
+                    _item.datetime = daysUpdate;
                     _item.amount = double.parse(itemLimitEdit.text);
                     _item.catID = widget.catID;
 
@@ -724,10 +778,23 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   TextField(
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}')),
+                    ],
                     controller: itemLimitEdit,
                     enabled: true,
                     decoration: InputDecoration(
                       labelText: "Limit",
+                    ),
+                  ),
+                  TextFormField(
+                    initialValue: daysUpdate,
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
+                    enabled: false,
+                    decoration: InputDecoration(
+                      labelText: "Date",
                     ),
                   ),
                 ],
@@ -824,7 +891,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 key: UniqueKey(),
                                 onDismissed: (direction) async {
                                   if (direction.toString() ==
-                                      "DismissDirection.endToStart") {
+                                      "DismissDirection.endToStart") { // if swiped to the right
+                                    daysUpdate = itemList[index].datetime;
+                                    print("UPDATE $daysUpdate");
                                     _editList(
                                         context,
                                         itemList[index].id,
@@ -836,7 +905,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                     editWeek(itemList[index].datetime,
                                         itemList[index].amount);
                                         */
-                                  } else {
+                                  } else { // if swiped to the left
                                     // delete item
 
                                     var result = await _itemService
