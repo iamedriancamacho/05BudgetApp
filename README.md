@@ -1,6 +1,6 @@
 Hi!
 
-Thank you for testing our software application on our Budget Application. This is in compliance to our Prelims Examination as well as a projects of our Mobile Development 2. 
+Thank you for testing our software application on our Budget Application. This is in compliance to our Prelims Examination as well as a Project for our Mobile Development 2. 
 Our team and I have been working hard in order to make this project perfect. However, it is not always the case. You may encouncer some bugs along your tests, but that is okay
 since this isn't a final version of our application. All of your filed issues do contribute into making our project successful. 
 
