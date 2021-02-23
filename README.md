@@ -8,5 +8,7 @@ With that said, Please do find time and look at anything that you feel is an err
 We hope you have a wonderful day!
 
 
-Regards,
-Edrian, Project Development Head
+Sincerely Yours,
+
+Edrian, 
+Project Development Head
