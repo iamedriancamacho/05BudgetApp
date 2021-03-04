@@ -70,7 +70,7 @@ class _HomeScreen extends State<HomeScreen> {
   checkItems() async {
     itemList = List<Item>();
     var items = await _itemService.readItem();
-   
+
     setState(() {
       items.forEach((category) {
         var itemModel = Item();
@@ -178,7 +178,7 @@ class _HomeScreen extends State<HomeScreen> {
       catModel.firstDate = category['firstDate'];
       catModel.endDate = category['endDate'];
       print("FORST DAY $firstDay");
-
+      globalList.add(catModel);
       if (firstDay == catModel.firstDate) {
         categoryList.add(catModel);
         catDropDownList.add(catModel.name);
@@ -468,6 +468,7 @@ class _HomeScreen extends State<HomeScreen> {
                     return DropdownMenuItem<String>(
                       onTap: () {
                         setState(() {
+                          getAllCategories();
                           print("DROPDOWN $value");
                           //x = catDropDownList.indexOf(value);
                           test(value);
@@ -542,8 +543,8 @@ class _HomeScreen extends State<HomeScreen> {
                     print("ALL CAT ${categoryList.length}");
                     //_item.id = 20 + ++temp;
                     if ((double.parse(itemAmount.text) +
-                                categoryList[addCatId].total) >
-                            categoryList[addCatId].max ||
+                                globalList[addCatId].total) >
+                            globalList[addCatId].max ||
                         double.parse(itemAmount.text) <= 0) {
                       popUp(context);
                     } else {
@@ -551,31 +552,26 @@ class _HomeScreen extends State<HomeScreen> {
                       _item.amount = double.parse(itemAmount.text);
                       _item.datetime = date;
                       _item.catID = addCatId;
-                      print("CAT ID IS ${_item.catID}");
-                      print("CATDOWNLIST = $catDropDownList");
 
                       listDays.clear();
                       updateWeek();
                       getAllDays();
                       getAllCategories();
                       var catM = Category();
-                      print("FIRST DATE FOR ITEMCAT ${_category.firstDate}");
-                      var result = await itemService.saveItem(_item);
 
+                      var result = await itemService.saveItem(_item);
+                      print("CATADDID $addCatId");
                       var result3 = await _categoryService.readCategories();
                       result3.forEach((cat) {
                         catM.id = cat['id'];
                         if (addCatId == catM.id) {
                           _category.id = addCatId;
-                          _category.max = categoryList[addCatId].max;
-                          _category.name = categoryList[addCatId].name;
+                          _category.max = globalList[addCatId].max;
+                          _category.name = globalList[addCatId].name;
                           _category.total = double.parse(itemAmount.text) +
-                              categoryList[addCatId].total;
-                          _category.firstDate =
-                              categoryList[addCatId].firstDate;
-                          _category.endDate = categoryList[addCatId].endDate;
-
-                          print("X DAY ${categoryList[x].firstDate}");
+                              globalList[addCatId].total;
+                          _category.firstDate = globalList[addCatId].firstDate;
+                          _category.endDate = globalList[addCatId].endDate;
                         }
                       });
                       var result2 =
@@ -886,12 +882,10 @@ class _HomeScreen extends State<HomeScreen> {
 
     return Column(
       children: <Widget>[
-        categoryList.length == 0
-            ? AutoSizeText("₱ 0.0")
-            : AutoSizeText(
-                "₱ $price",
-                maxLines: 1,
-              ),
+        AutoSizeText(
+          "₱ $price",
+          maxLines: 1,
+        ),
         Stack(
           children: <Widget>[
             Container(
@@ -918,6 +912,38 @@ class _HomeScreen extends State<HomeScreen> {
           maxLines: 1,
         ),
       ],
+    );
+  }
+
+  Widget barChart() {
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "MON", 0)
+              : chart(mon, "MON", listDays[0].monday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "TUE", 0)
+              : chart(tue, "TUE", listDays[0].tuesday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "WED", 0)
+              : chart(wed, "WED", listDays[0].wednesday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "THU", 0)
+              : chart(thu, "THU", listDays[0].thursday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "FRI", 0)
+              : chart(fri, "FRI", listDays[0].friday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "SAT", 0)
+              : chart(sat, "SAT", listDays[0].saturday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "SUN", 0)
+              : chart(sun, "SUN", listDays[0].sunday),
+        ],
+      ),
     );
   }
 
@@ -1018,13 +1044,14 @@ class _HomeScreen extends State<HomeScreen> {
                                 },
                               ),
                               AutoSizeText(
-                                '${DateFormat.yMd().format(firstDayWeek)} - ${DateFormat.yMd().format(firstDayWeek.add(new Duration(days: 6)))}',
+                                '${DateFormat.yMMMd().format(firstDayWeek)} - ${DateFormat.yMMMd().format(firstDayWeek.add(new Duration(days: 6)))}',
                                 maxLines: 1,
                                 style: TextStyle(
                                     fontFamily: "Jose",
                                     fontSize: 15.0,
                                     color: Theme.of(context).accentColor),
                               ),
+                           
                               IconButton(
                                 icon: Icon(Icons.keyboard_arrow_right),
                                 iconSize: 30.0,
@@ -1060,24 +1087,11 @@ class _HomeScreen extends State<HomeScreen> {
                                   });
                                 },
                               ),
+                               
                             ],
                           ),
                           //  chart(20.0),
-                          Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                chart(mon, "MON", listDays[0].monday),
-                                chart(tue, "TUE", listDays[0].tuesday),
-                                chart(wed, "WED", listDays[0].wednesday),
-                                chart(thu, "THU", listDays[0].thursday),
-                                chart(fri, "FRI", listDays[0].friday),
-                                chart(sat, "SAT", listDays[0].saturday),
-                                chart(sun, "SUN", listDays[0].sunday),
-                              ],
-                            ),
-                          ),
+                             barChart(),
                         ],
                       ),
                     ),

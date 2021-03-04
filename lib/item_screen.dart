@@ -801,6 +801,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             onPressed: () {
               setState(() {
                 getAllDays();
+             
                 Navigator.pop(context);
                 //  Navigator.pushNamed(context, "Setting");
               });
