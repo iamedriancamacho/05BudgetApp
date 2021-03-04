@@ -47,3 +47,6 @@ final catLimit = TextEditingController();
 //edit textfields
 final catNameEdit = TextEditingController();
 final catLimitEdit = TextEditingController();
+var catAddModel = Category();
+int addCatId;
+bool touch = false;
