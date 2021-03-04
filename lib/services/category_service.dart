@@ -22,6 +22,12 @@ class CategoryService {
    return await _rep.readData('CAT');
   }
 
+  //read data from table
+  populateCategories() async {
+    return await _rep.allCategory('CAT');
+  }
+
+
   //read data from table by ID
   readCategoriesByID(categoryID) async {
     return await _rep.readDataByID('CAT', categoryID);

@@ -25,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreen extends State<HomeScreen> {
+  var checkDrop = false;
   var _item = Item(); //accessing item method
   var _itemService = ItemService(); //accessing item service method
   var _category = Category(); //accessing category method
@@ -40,11 +41,13 @@ class _HomeScreen extends State<HomeScreen> {
   String date = "Add Date"; // inital string value for adding dates
   DateTime firstDayWeek = new DateTime.now()
       .subtract(new Duration(days: DateTime.now().weekday - 1));
+
   //dropdown
   int x; //get ID of list
   String dropdownValue;
   List<String> catDropDownList = [];
   double percent;
+
   //end of variables
 
   @override
@@ -162,12 +165,29 @@ class _HomeScreen extends State<HomeScreen> {
     });
   }
 
+  populateCategories() async {
+    var categories = await _categoryService.populateCategories();
+    categories.forEach((category) {
+      var catModel = Category();
+      catModel.id = category['id'];
+      catModel.name = category['name'];
+      catModel.total = category['total'];
+      catModel.max = category['max'];
+      catModel.firstDate = category['firstDate'];
+      catModel.endDate = category['endDate'];
+      globalList.add(catModel);
+    });
+  }
+
   //display categories
   //Async means that this function is asynchronous and you might need to wait a bit to get its result.
   getAllCategories() async {
+    populateCategories();
     categoryList = List<Category>();
     var categories = await _categoryService.readCategories();
     int count = 0;
+    int tempe = 0;
+    globalList.clear();
     catDropDownList.clear();
     categories.forEach((category) {
       var catModel = Category();
@@ -177,14 +197,17 @@ class _HomeScreen extends State<HomeScreen> {
       catModel.max = category['max'];
       catModel.firstDate = category['firstDate'];
       catModel.endDate = category['endDate'];
-      print("FORST DAY $firstDay");
+      print("FIRST DAY $firstDay");
       globalList.add(catModel);
+      print('globalList $tempe: ${globalList[tempe].name}');
+      tempe++;
       if (firstDay == catModel.firstDate) {
         categoryList.add(catModel);
         catDropDownList.add(catModel.name);
       }
     });
     print("SuLOD $count");
+    print('length of GL: ${globalList.length}');
   }
 
   initDays() async {
@@ -460,6 +483,8 @@ class _HomeScreen extends State<HomeScreen> {
                     setState(() {
                       dropdownValue = newValue;
                       Navigator.pop(context);
+                      checkDrop = true;
+
                       addItem();
                     });
                   },
@@ -489,100 +514,112 @@ class _HomeScreen extends State<HomeScreen> {
                     fontSize: 20.0),
               ),
               SizedBox(height: 20.0),
-              Container(
-                width: 300,
-                child: TextField(
-                  controller: itemName,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    labelText: "Enter an Item",
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0)),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.0),
-              Container(
-                width: 300,
-                child: TextField(
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                        RegExp(r'^\d+\.?\d{0,2}')),
-                  ],
-                  controller: itemAmount,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    labelText: "Enter an Amount",
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0)),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.0),
-              Container(
-                width: 300,
-                child: ListTile(
-                  title: Text('$date'),
-                  leading: Icon(Icons.date_range),
-                  onTap: () {
-                    _getDate();
-                    // Navigator.pop(context);
-                    // addItem();
-                  },
-                ),
-              ),
-              Container(
-                alignment: Alignment.centerRight,
-                child: FlatButton(
-                  child: Text(
-                    "SUBMIT",
-                    style: TextStyle(fontSize: 17.0),
-                  ),
-                  onPressed: () async {
-                    print("ALL CAT ${categoryList.length}");
-                    //_item.id = 20 + ++temp;
-                    if ((double.parse(itemAmount.text) +
-                                globalList[addCatId].total) >
-                            globalList[addCatId].max ||
-                        double.parse(itemAmount.text) <= 0) {
-                      popUp(context);
-                    } else {
-                      _item.name = itemName.text;
-                      _item.amount = double.parse(itemAmount.text);
-                      _item.datetime = date;
-                      _item.catID = addCatId;
+              Visibility(
+                visible: checkDrop,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 300,
+                      child: TextField(
+                        controller: itemName,
+                        decoration: InputDecoration(
+                          contentPadding:
+                              EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                          labelText: "Enter an Item",
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30.0)),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.0),
+                    Container(
+                      width: 300,
+                      child: TextField(
+                        keyboardType:
+                            TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d+\.?\d{0,2}')),
+                        ],
+                        controller: itemAmount,
+                        decoration: InputDecoration(
+                          contentPadding:
+                              EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+                          labelText: "Enter an Amount",
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30.0)),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.0),
+                    Container(
+                      width: 300,
+                      child: ListTile(
+                        title: Text('$date'),
+                        leading: Icon(Icons.date_range),
+                        onTap: () {
+                          _getDate();
+                          // Navigator.pop(context);
+                          // addItem();
+                        },
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.centerRight,
+                      child: FlatButton(
+                        child: Text(
+                          "SUBMIT",
+                          style: TextStyle(fontSize: 17.0),
+                        ),
+                        onPressed: () async {
+                          print("ALL CAT ${categoryList.length}");
+                          //_item.id = 20 + ++temp;
+                          if ((double.parse(itemAmount.text) +
+                                      globalList[addCatId].total) >
+                                  globalList[addCatId].max ||
+                              double.parse(itemAmount.text) <= 0 ||
+                              date == 'Add Date') {
+                            popUp(context);
+                          } else {
+                            _item.name = itemName.text;
+                            _item.amount = double.parse(itemAmount.text);
+                            _item.datetime = date;
+                            _item.catID = addCatId;
 
-                      listDays.clear();
-                      updateWeek();
-                      getAllDays();
-                      getAllCategories();
-                      var catM = Category();
+                            listDays.clear();
+                            updateWeek();
+                            getAllDays();
+                            getAllCategories();
+                            var catM = Category();
 
-                      var result = await itemService.saveItem(_item);
-                      print("CATADDID $addCatId");
-                      var result3 = await _categoryService.readCategories();
-                      result3.forEach((cat) {
-                        catM.id = cat['id'];
-                        if (addCatId == catM.id) {
-                          _category.id = addCatId;
-                          _category.max = globalList[addCatId].max;
-                          _category.name = globalList[addCatId].name;
-                          _category.total = double.parse(itemAmount.text) +
-                              globalList[addCatId].total;
-                          _category.firstDate = globalList[addCatId].firstDate;
-                          _category.endDate = globalList[addCatId].endDate;
-                        }
-                      });
-                      var result2 =
-                          await _categoryService.updateCategory(_category);
-                      getAllCategories();
-                      print("RESULT FOR UPDATECAT = $result2");
+                            var result = await itemService.saveItem(_item);
+                            print("CATADDID $addCatId");
+                            var result3 =
+                                await _categoryService.readCategories();
+                            result3.forEach((cat) {
+                              catM.id = cat['id'];
+                              if (addCatId == catM.id) {
+                                _category.id = addCatId;
+                                _category.max = globalList[addCatId].max;
+                                _category.name = globalList[addCatId].name;
+                                _category.total =
+                                    double.parse(itemAmount.text) +
+                                        globalList[addCatId].total;
+                                _category.firstDate =
+                                    globalList[addCatId].firstDate;
+                                _category.endDate =
+                                    globalList[addCatId].endDate;
+                              }
+                            });
+                            var result2 = await _categoryService
+                                .updateCategory(_category);
+                            getAllCategories();
+                            print("RESULT FOR UPDATECAT = $result2");
 
-                      if (result > 0) {
-                        print(result);
-                        //  getAllItems(_category);
-                        /*
+                            if (result > 0) {
+                              print(result);
+                              //  getAllItems(_category);
+                              /*
                         if (firstDay == categoryList[x].firstDate) {
                           _updateCatFromItem(
                               _category.total,
@@ -593,14 +630,29 @@ class _HomeScreen extends State<HomeScreen> {
                               _category.endDate);
                         }
 */
-                        Navigator.pop(context);
-                      }
+                              Navigator.pop(context);
+                            }
 
-                      itemAmount.text = ' ';
-                      itemName.text = ' ';
-                      date = "Add Date";
-                    }
-                  },
+                            itemAmount.text = ' ';
+                            itemName.text = ' ';
+                            date = "Add Date";
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => CategoryScreen(
+                                      firstDate: globalList[addCatId].firstDate,
+                                      endDate: globalList[addCatId].endDate,
+                                      updateCat: _updateCatFromItem,
+                                      catMax: globalList[addCatId].max,
+                                      catID: globalList[addCatId].id,
+                                      name: globalList[addCatId].name)),
+                            ).then((value) => setState(() {}));
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -742,6 +794,7 @@ class _HomeScreen extends State<HomeScreen> {
                         print("CATEGORY SECOND DAY ${_category.endDate}");
                         var result =
                             await _categoryService.saveCategory(_category);
+                        globalList.add(_category);
                         getAllCategories();
                         print(result);
                         catName.text = '';
@@ -969,6 +1022,7 @@ class _HomeScreen extends State<HomeScreen> {
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {
+                checkDrop = false;
                 print("appbar $firstDay");
                 addCategory();
               },
@@ -1051,7 +1105,6 @@ class _HomeScreen extends State<HomeScreen> {
                                     fontSize: 15.0,
                                     color: Theme.of(context).accentColor),
                               ),
-                           
                               IconButton(
                                 icon: Icon(Icons.keyboard_arrow_right),
                                 iconSize: 30.0,
@@ -1087,11 +1140,10 @@ class _HomeScreen extends State<HomeScreen> {
                                   });
                                 },
                               ),
-                               
                             ],
                           ),
                           //  chart(20.0),
-                             barChart(),
+                          barChart(),
                         ],
                       ),
                     ),

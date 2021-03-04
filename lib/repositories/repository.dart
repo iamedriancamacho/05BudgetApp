@@ -45,6 +45,14 @@ class Repository {
         await connection.rawQuery('SELECT COUNT(*) FROM $table'));
   }
 
+  //list all category
+
+  allCategory(table) async {
+    var connection = await finaldb;
+    return await connection
+        .rawQuery("SELECT * FROM $table");
+  }
+
   //update data from table
   updateData(table, data) async {
     var connection = await finaldb;
