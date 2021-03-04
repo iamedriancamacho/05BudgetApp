@@ -1,16 +1,14 @@
-# budget
+Hi!
 
-A new Flutter project.
+Thank you for testing our software application on our Budget Application. This is in compliance to our Prelims Examination as well as a Project for our Mobile Development 2. 
+Our team and I have been working hard in order to make this project perfect. However, it is not always the case. You may encouncer some bugs along your tests, but that is okay
+since this isn't a final version of our application. All of your filed issues do contribute into making our project successful. 
 
-## Getting Started
+With that said, Please do find time and look at anything that you feel is an error towards the software and my team and I will be here to fix all of your issues. 
+We hope you have a wonderful day!
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+Sincerely Yours,
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Edrian, 
+Project Development Head
