@@ -57,16 +57,20 @@ class _HomeScreen extends State<HomeScreen> {
     getAllDays(); // appending values inside weekly spending chart to a list
   }
 
+//set the initial value for firstweek and second week
   setDate() {
     firstDay = DateFormat.yMd().format(firstDayWeek);
     secondDay =
         DateFormat.yMd().format(firstDayWeek.add(new Duration(days: 6)));
+    //  dis1 = firstDayWeek.add(new Duration(days: 7));
+    dis2 = firstDayWeek.add(new Duration(days: 6));
   }
 
   //checks if items exist
   checkItems() async {
     itemList = List<Item>();
     var items = await _itemService.readItem();
+
     setState(() {
       items.forEach((category) {
         var itemModel = Item();
@@ -86,6 +90,7 @@ class _HomeScreen extends State<HomeScreen> {
   _getDate() async {
     bool go = false;
     //DateTime date;
+
     newDatetime = await showRoundedDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -128,7 +133,9 @@ class _HomeScreen extends State<HomeScreen> {
                       child: Text("Ok"),
                       onPressed: () {
                         Navigator.pop(context);
+
                         _getDate();
+
                         Navigator.pop(context);
                       },
                     ),
@@ -171,7 +178,7 @@ class _HomeScreen extends State<HomeScreen> {
       catModel.firstDate = category['firstDate'];
       catModel.endDate = category['endDate'];
       print("FORST DAY $firstDay");
-
+      globalList.add(catModel);
       if (firstDay == catModel.firstDate) {
         categoryList.add(catModel);
         catDropDownList.add(catModel.name);
@@ -194,6 +201,7 @@ class _HomeScreen extends State<HomeScreen> {
       _days.saturday = 0.0;
       _days.sunday = 0.0;
       var resultDays = await _dayService.saveDays(_days);
+      print(resultDays);
       var readDays1 = await _dayService.readDays();
       readDays1.forEach((days) {
         print("INIT ID");
@@ -206,14 +214,8 @@ class _HomeScreen extends State<HomeScreen> {
         print("INIT LIST DAYS");
         setState(() {
           listDays.add(_days);
-          print("INIT ID = ${listDays[0].id}");
-          print("INIT ID = ${listDays[0].firstWeek}");
         });
-
-        print("LIST LENGTH INIT${listDays.length}");
       }
-
-      print("RESULT DAYS $resultDays DAYS IS ADDED! FIRST DAY == $firstDay");
     }
   }
 
@@ -248,7 +250,7 @@ class _HomeScreen extends State<HomeScreen> {
                 daysModel.saturday +
                 daysModel.sunday;
             print("TOTAL $total");
-            if (total == 0) {
+            if (total == 0 || categoryList.length == 0) {
               mon = 0;
               tue = 0;
               wed = 0;
@@ -266,25 +268,6 @@ class _HomeScreen extends State<HomeScreen> {
               sat = (daysModel.saturday / total) * 100;
               sun = (daysModel.sunday / total) * 100;
             }
-            print("SUNDAY $sun");
-            print("LISTDAYS HOME ${listDays.length}");
-
-            /*
-            mon.clear();
-            tue.clear();
-            wed.clear();
-            thu.clear();
-            fri.clear();
-            sat.clear();
-            sun.clear();
-            mon.add(daysModel.monday);
-            tue.add(daysModel.tuesday);
-            wed.add(daysModel.wednesday);
-            thu.add(daysModel.thursday);
-            fri.add(daysModel.friday);
-            sat.add(daysModel.saturday);
-            sun.add(daysModel.sunday);
-            */
           });
         }
       });
@@ -428,6 +411,25 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   //add item using category screen
+  test(String value) async {
+    int count = 0;
+
+    var result3 = await _categoryService.readCategories();
+    setState(() {
+      result3.forEach((cat) {
+        catAddModel.id = cat['id'];
+        catAddModel.name = cat['name'];
+        catAddModel.firstDate = cat['firstDate'];
+        if (value == cat['name']) {
+          addCatId = catAddModel.id;
+          print(
+              "COUNT $count \nID = ${catAddModel.id}\nNAME = ${catAddModel.name}\nFIRSTDATE = ${catAddModel.firstDate}");
+        }
+
+        count++;
+      });
+    });
+  }
 
   addItem() {
     print("TAP CATDROP $catDropDownList");
@@ -466,8 +468,10 @@ class _HomeScreen extends State<HomeScreen> {
                     return DropdownMenuItem<String>(
                       onTap: () {
                         setState(() {
-                          x = catDropDownList.indexOf(value);
-                          print('onTap: $x');
+                          //getAllCategories();
+                          print("DROPDOWN $value");
+                          //x = catDropDownList.indexOf(value);
+                          test(value);
                         });
                       },
                       value: dropdownValue,
@@ -536,39 +540,38 @@ class _HomeScreen extends State<HomeScreen> {
                     style: TextStyle(fontSize: 17.0),
                   ),
                   onPressed: () async {
+                    print("ALL CAT ${categoryList.length}");
                     //_item.id = 20 + ++temp;
                     if ((double.parse(itemAmount.text) +
-                                categoryList[x].total) >
-                            categoryList[x].max ||
+                                globalList[addCatId].total) >
+                            globalList[addCatId].max ||
                         double.parse(itemAmount.text) <= 0) {
                       popUp(context);
                     } else {
                       _item.name = itemName.text;
                       _item.amount = double.parse(itemAmount.text);
                       _item.datetime = date;
-                      _item.catID = x;
-                      print("CAT ID IS ${_item.catID}");
-                      print("CATDOWNLIST = $catDropDownList");
+                      _item.catID = addCatId;
 
                       listDays.clear();
                       updateWeek();
                       getAllDays();
+                      getAllCategories();
                       var catM = Category();
-                      print("FIRST DATE FOR ITEMCAT ${_category.firstDate}");
+
                       var result = await itemService.saveItem(_item);
+                      print("CATADDID $addCatId");
                       var result3 = await _categoryService.readCategories();
                       result3.forEach((cat) {
                         catM.id = cat['id'];
-                        if (x == catM.id) {
-                          _category.id = x;
-                          _category.max = categoryList[x].max;
-                          _category.name = categoryList[x].name;
+                        if (addCatId == catM.id) {
+                          _category.id = addCatId;
+                          _category.max = globalList[addCatId].max;
+                          _category.name = globalList[addCatId].name;
                           _category.total = double.parse(itemAmount.text) +
-                              categoryList[x].total;
-                          _category.firstDate = categoryList[x].firstDate;
-                          _category.endDate = categoryList[x].endDate;
-
-                          print("X DAY ${categoryList[x].firstDate}");
+                              globalList[addCatId].total;
+                          _category.firstDate = globalList[addCatId].firstDate;
+                          _category.endDate = globalList[addCatId].endDate;
                         }
                       });
                       var result2 =
@@ -739,17 +742,14 @@ class _HomeScreen extends State<HomeScreen> {
                         print("CATEGORY SECOND DAY ${_category.endDate}");
                         var result =
                             await _categoryService.saveCategory(_category);
-
+                        getAllCategories();
                         print(result);
                         catName.text = '';
                         catLimit.text = '';
-                        getAllCategories();
+
+                        saveDays();
                         getAllDays();
                         // add days
-
-                        setState(() {
-                          saveDays();
-                        });
 
                         // end add days
                         Navigator.pop(context);
@@ -758,7 +758,6 @@ class _HomeScreen extends State<HomeScreen> {
                   },
                 ),
               ),
-              /*
               catDropDownList.length > 0
                   ? FlatButton(
                       child: Text('I already have a category'),
@@ -767,8 +766,7 @@ class _HomeScreen extends State<HomeScreen> {
                         Navigator.pop(context);
                         addItem();
                       })
-                      */
-              Text(' '),
+                  : Text(' '),
               SizedBox(height: 20.0),
             ],
           );
@@ -855,53 +853,6 @@ class _HomeScreen extends State<HomeScreen> {
         });
   }
 
-/*
-  getAllItems(Category cat) async {
-    // var daysModel = Days();
-    double total = 0;
-    int countMoney = 0;
-
-    itemList = List<Item>();
-    var items = await _itemService.readItem();
-
-    setState(() {
-      items.forEach((category) {
-        var itemModel = Item();
-        itemModel.id = category['id'];
-        itemModel.name = category['name'];
-        itemModel.datetime = category['datetime'];
-        itemModel.amount = category['amount'];
-        itemModel.catID = category['catID'];
-        //checks if catID is correct
-        if (itemModel.catID == cat.id) {
-          itemList.add(itemModel);
-          countMoney++;
-        }
-      });
-      if (itemList.isNotEmpty) {
-        for (int i = 0; i < countMoney; i++) {
-          total += itemList[i].amount;
-        }
-        print("TOTAL FOR MONDAY $total");
-        percent = total / cat.max;
-      }
-    });
-    if (total > 0) {
-      _category.id = cat.id;
-      _category.max = cat.max;
-      _category.name = cat.name;
-      _category.firstDate = cat.firstDate;
-      _category.endDate = cat.endDate;
-      _category.total = cat.total;
-      _category.firstDate = cat.firstDate;
-      _category.endDate = cat.endDate;
-
-      var result2 = await _categoryService.updateCategory(_category);
-      getAllCategories();
-      print(result2);
-    }
-  }
-*/
   _updateCatFromItem(double tempMoney, int id, String name, double max,
       String firstDate, String endDate) async {
     //var result1 = await _categoryService.readCategories();
@@ -961,6 +912,38 @@ class _HomeScreen extends State<HomeScreen> {
           maxLines: 1,
         ),
       ],
+    );
+  }
+
+  Widget barChart() {
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "MON", 0)
+              : chart(mon, "MON", listDays[0].monday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "TUE", 0)
+              : chart(tue, "TUE", listDays[0].tuesday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "WED", 0)
+              : chart(wed, "WED", listDays[0].wednesday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "THU", 0)
+              : chart(thu, "THU", listDays[0].thursday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "FRI", 0)
+              : chart(fri, "FRI", listDays[0].friday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "SAT", 0)
+              : chart(sat, "SAT", listDays[0].saturday),
+          listDays.length == 0 || categoryList.length == 0
+              ? chart(0, "SUN", 0)
+              : chart(sun, "SUN", listDays[0].sunday),
+        ],
+      ),
     );
   }
 
@@ -1061,13 +1044,14 @@ class _HomeScreen extends State<HomeScreen> {
                                 },
                               ),
                               AutoSizeText(
-                                '${DateFormat.yMd().format(firstDayWeek)} - ${DateFormat.yMd().format(firstDayWeek.add(new Duration(days: 6)))}',
+                                '${DateFormat.yMMMd().format(firstDayWeek)} - ${DateFormat.yMMMd().format(firstDayWeek.add(new Duration(days: 6)))}',
                                 maxLines: 1,
                                 style: TextStyle(
                                     fontFamily: "Jose",
                                     fontSize: 15.0,
                                     color: Theme.of(context).accentColor),
                               ),
+                           
                               IconButton(
                                 icon: Icon(Icons.keyboard_arrow_right),
                                 iconSize: 30.0,
@@ -1103,38 +1087,11 @@ class _HomeScreen extends State<HomeScreen> {
                                   });
                                 },
                               ),
+                               
                             ],
                           ),
                           //  chart(20.0),
-                          Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                listDays.length == 0 || categoryList.length == 0
-                                    ? Text("")
-                                    : chart(mon, "MON", listDays[0].monday),
-                                listDays.length == 0 || categoryList.length == 0
-                                    ? Text("")
-                                    : chart(tue, "TUE", listDays[0].tuesday),
-                                listDays.length == 0 || categoryList.length == 0
-                                    ? Text("")
-                                    : chart(wed, "WED", listDays[0].wednesday),
-                                listDays.length == 0 || categoryList.length == 0
-                                    ? Text("Ahhww it's empty!")
-                                    : chart(thu, "THU", listDays[0].thursday),
-                                listDays.length == 0 || categoryList.length == 0
-                                    ? Text("")
-                                    : chart(fri, "FRI", listDays[0].friday),
-                                listDays.length == 0 || categoryList.length == 0
-                                    ? Text("")
-                                    : chart(sat, "SAT", listDays[0].saturday),
-                                listDays.length == 0 || categoryList.length == 0
-                                    ? Text("")
-                                    : chart(sun, "SUN", listDays[0].sunday),
-                              ],
-                            ),
-                          ),
+                             barChart(),
                         ],
                       ),
                     ),
@@ -1173,7 +1130,7 @@ class _HomeScreen extends State<HomeScreen> {
                                   // getCategories();
                                   _edit(context);
                                 } else {
-                                  getAllCategories();
+                                  print("left;");
                                 }
                                 //cannot delete category
                               },
@@ -1195,6 +1152,7 @@ class _HomeScreen extends State<HomeScreen> {
                                     child: ListTile(
                                       //minVerticalPadding: 20.0,
                                       onTap: () {
+                                        /*
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -1215,22 +1173,46 @@ class _HomeScreen extends State<HomeScreen> {
                                                         .name),
                                           ),
                                         );
+                                        */
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  CategoryScreen(
+                                                      firstDate:
+                                                          categoryList[index]
+                                                              .firstDate,
+                                                      endDate:
+                                                          categoryList[index]
+                                                              .endDate,
+                                                      updateCat:
+                                                          _updateCatFromItem,
+                                                      catMax:
+                                                          categoryList[index]
+                                                              .max,
+                                                      catID: categoryList[index]
+                                                          .id,
+                                                      name: categoryList[index]
+                                                          .name)),
+                                        ).then((value) => setState(() {}));
                                       },
                                       title: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           // Text('${categoryList[index].id}'),
-                                          Text(
+                                          AutoSizeText(
                                             "${categoryList[index].name}",
+                                            maxLines: 1,
                                             style: TextStyle(
                                                 color: Theme.of(context)
                                                     .accentColor,
                                                 fontWeight: FontWeight.w400,
                                                 fontSize: 25.0),
                                           ),
-                                          Text(
-                                              "₱ ${categoryList[index].total}/${categoryList[index].max}"),
+                                          AutoSizeText(
+                                              "₱ ${categoryList[index].total}/${categoryList[index].max}",
+                                              maxLines: 1),
                                         ],
                                       ),
 
@@ -1248,8 +1230,9 @@ class _HomeScreen extends State<HomeScreen> {
                                         child: CircleAvatar(
                                           backgroundColor: Colors.orange,
                                           foregroundColor: Colors.black,
-                                          child: Text(
+                                          child: AutoSizeText(
                                             "${categoryList[index].name[0]}",
+                                            maxLines: 1,
                                             style: TextStyle(fontSize: 30.0),
                                           ),
                                         ),

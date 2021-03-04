@@ -39,7 +39,7 @@ class Category {
 }
 
 List<Category> categoryList = List<Category>(); //list
-
+List<Category>globalList = List<Category>();
 //textfields
 final catName = TextEditingController();
 final catLimit = TextEditingController();
@@ -47,3 +47,6 @@ final catLimit = TextEditingController();
 //edit textfields
 final catNameEdit = TextEditingController();
 final catLimitEdit = TextEditingController();
+var catAddModel = Category();
+int addCatId;
+bool touch = false;

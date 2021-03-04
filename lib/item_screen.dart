@@ -56,8 +56,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
 // calculation of weekyl spending chart
   getAllDays() async {
     var days = await _daysService.readDays();
-    var daysModel2 = Days();
+    listDays.clear();
     setState(() {
+      var daysModel2 = Days();
       days.forEach((daysWeek) {
         daysModel2.id = daysWeek["id"];
         daysModel2.firstWeek = daysWeek["firstWeek"];
@@ -68,11 +69,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
         daysModel2.friday = daysWeek["friday"];
         daysModel2.saturday = daysWeek["saturday"];
         daysModel2.sunday = daysWeek["sunday"];
-      });
-      if (widget.firstDate == daysModel2.firstWeek) {
-        chek = daysModel2.monday;
-        setState(() {
-          listDays.clear();
+        if (widget.firstDate == daysModel2.firstWeek) {
+          chek = daysModel2.monday;
+
           listDays.add(daysModel2);
           daysIndex = daysModel2.id;
           print("LISTDAYS ${listDays.length}");
@@ -102,24 +101,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
             sun = (daysModel2.sunday / total) * 100;
           }
           print("SUNDAY IS $sun");
-          /*
-            mon.clear();
-            tue.clear();
-            wed.clear();
-            thu.clear();
-            fri.clear();
-            sat.clear();
-            sun.clear();
-            mon.add(daysModel2.monday);
-            tue.add(daysModel2.tuesday);
-            wed.add(daysModel2.wednesday);
-            thu.add(daysModel2.thursday);
-            fri.add(daysModel2.friday);
-            sat.add(daysModel2.saturday);
-            sun.add(daysModel2.sunday);
-            */
-        });
-      }
+        }
+      });
     });
   }
 
@@ -206,7 +189,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         disabledColor: Colors.red,
       ),
       imageHeader: AssetImage("assets/images/novigrad.jpg"),
-      description: "1 + 1 = 2",
+      description: "Enter Date for Item",
 // disabling first the allowed dates
       listDateDisabled: [
         dis2.subtract(new Duration(days: 0)),
@@ -252,16 +235,17 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
     setState(() {
       if (go) {
+        print("DEFAULT DATE $newDatetime");
         date = DateFormat.yMMMMEEEEd().format(newDatetime);
         Navigator.pop(context);
         addItem();
-        getAllDays();
+        // getAllDays();
       } else
         date = "Add Date";
     });
   }
 
-// function for adding items 
+// function for adding items
   Widget addItem() {
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
@@ -301,8 +285,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   controller: itemAmount,
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                        RegExp(r'^\d+\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(RegExp(
+                        r'^\d+\.?\d{0,2}')), // input trapping, allowed inputs are one dot, and 2 digits after the dot
                   ],
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -459,23 +443,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           }
                         });
                         var result2 = await _daysService.updateDays(daysModel3);
-                        getAllDays();
                         print(result2);
                         if (result > 0) {
                           print('RESULT1 is $result');
                         }
-
                         itemName.text = '';
                         itemAmount.text = '';
                         Navigator.pop(context);
                         getAllItems();
-
                         date = "Add Date";
+                        getAllDays();
                       }
                     }
-                    //end of checking
-
-                    //_item.id is AUTOINCREMENT
                   },
                 ),
               ),
@@ -487,6 +466,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
 // for updating weekly spending values
   editWeek(String date, double amount) async {
+    print("DATE TO EDIT $date AMOUNT TO EDIT $amount");
     var daysModel3 = Days();
     var daysWeek1 = await _daysService.readDays();
     setState(() {
@@ -494,8 +474,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
         if (widget.firstDate == days['firstWeek']) {
           if (getDayString(date) == "Monday") {
             print("aight");
-            var temp = days['monday'];
-            daysModel3.monday = temp - amount;
+            // var temp = days['monday'];
+            daysModel3.monday = amount;
             daysModel3.id = days['id'];
             daysModel3.firstWeek = days['firstWeek'];
             daysModel3.tuesday = days['tuesday'];
@@ -506,8 +486,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
             daysModel3.sunday = days['sunday'];
             print("DAYSMODEL MONDAY ${daysModel3.monday}");
           } else if (getDayString(date) == "Tuesday") {
-            var temp = days['tuesday'];
-            daysModel3.tuesday = temp - amount;
+            print("TUESDAY");
+            //     var temp = days['tuesday'];
+            daysModel3.tuesday = amount;
+            print("TUESDAY == $amount");
             daysModel3.id = days['id'];
             daysModel3.firstWeek = days['firstWeek'];
             daysModel3.monday = days['monday'];
@@ -518,8 +500,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
             daysModel3.sunday = days['sunday'];
             print("DAYSMODEL tue ${daysModel3.tuesday}");
           } else if (getDayString(date) == "Wednesday") {
-            var temp = days['wednesday'];
-            daysModel3.wednesday = temp - amount;
+            //  var temp = days['wednesday'];
+            daysModel3.wednesday = amount;
             daysModel3.id = days['id'];
             daysModel3.firstWeek = days['firstWeek'];
             daysModel3.monday = days['monday'];
@@ -530,8 +512,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
             daysModel3.sunday = days['sunday'];
             print("DAYSMODEL wed ${daysModel3.wednesday}");
           } else if (getDayString(date) == "Thursday") {
-            var temp = days['thursday'];
-            daysModel3.thursday = temp - amount;
+            //  var temp = days['thursday'];
+            daysModel3.thursday = amount;
             daysModel3.id = days['id'];
             daysModel3.firstWeek = days['firstWeek'];
             daysModel3.monday = days['monday'];
@@ -542,8 +524,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
             daysModel3.sunday = days['sunday'];
             print("DAYSMODEL thu ${daysModel3.thursday}");
           } else if (getDayString(date) == "Friday") {
-            var temp = days['friday'];
-            daysModel3.friday = temp - amount;
+            //  var temp = days['friday'];
+            daysModel3.friday = amount;
             daysModel3.id = days['id'];
             daysModel3.firstWeek = days['firstWeek'];
             daysModel3.monday = days['monday'];
@@ -554,8 +536,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
             daysModel3.sunday = days['sunday'];
             print("DAYSMODEL fri ${daysModel3.friday}");
           } else if (getDayString(date) == "Saturday") {
-            var temp = days['saturday'];
-            daysModel3.saturday = temp - amount;
+            // var temp = days['saturday'];
+            daysModel3.saturday = amount;
             daysModel3.id = days['id'];
             daysModel3.firstWeek = days['firstWeek'];
             daysModel3.monday = days['monday'];
@@ -566,8 +548,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
             daysModel3.sunday = days['sunday'];
             print("DAYSMODEL sat ${daysModel3.saturday}");
           } else if (getDayString(date) == "Sunday") {
-            var temp = days['sunday'];
-            daysModel3.sunday = temp - amount;
+            // var temp = days['sunday'];
+            daysModel3.sunday = amount;
             daysModel3.id = days['id'];
             daysModel3.firstWeek = days['firstWeek'];
             daysModel3.monday = days['monday'];
@@ -586,7 +568,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     print(result2);
   }
 
-// for updating weekly spending values
+// for deleting weekly spending values
   deductWeek(String date, double amount) async {
     var daysModel3 = Days();
     var daysWeek1 = await _daysService.readDays();
@@ -753,7 +735,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     _item.datetime = daysUpdate;
                     _item.amount = double.parse(itemLimitEdit.text);
                     _item.catID = widget.catID;
-
+                    editWeek(daysUpdate, double.parse(itemLimitEdit.text));
                     var result = await _itemService.updateItem(_item);
                     if (result > 0) {
                       print('RESULT is $result');
@@ -765,7 +747,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 },
               ),
             ],
-            title: Text("Edit Category"),
+            title: Text("Edit Item"),
             content: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
@@ -785,7 +767,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     controller: itemLimitEdit,
                     enabled: true,
                     decoration: InputDecoration(
-                      labelText: "Limit",
+                      labelText: "Amount",
                     ),
                   ),
                   TextFormField(
@@ -810,15 +792,27 @@ class _CategoryScreenState extends State<CategoryScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Text("${widget.name}"),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              setState(() {
+                getAllDays();
+             
+                Navigator.pop(context);
+                //  Navigator.pushNamed(context, "Setting");
+              });
+            },
+          ),
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {
                 addItem();
-                getAllDays();
+                //   getAllDays();
               },
             )
           ],
@@ -891,7 +885,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 key: UniqueKey(),
                                 onDismissed: (direction) async {
                                   if (direction.toString() ==
-                                      "DismissDirection.endToStart") { // if swiped to the right
+                                      "DismissDirection.endToStart") {
+                                    // if swiped to the right
                                     daysUpdate = itemList[index].datetime;
                                     print("UPDATE $daysUpdate");
                                     _editList(
@@ -901,18 +896,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                         itemList[index].amount);
 
                                     _editL(context);
-                                    /*
-                                    editWeek(itemList[index].datetime,
-                                        itemList[index].amount);
-                                        */
-                                  } else { // if swiped to the left
+                                  } else {
+                                    // if swiped to the left
                                     // delete item
 
                                     var result = await _itemService
                                         .deleteCategory(itemList[index].id);
                                     deductWeek(itemList[index].datetime,
                                         itemList[index].amount);
-                                    getAllDays();
+
                                     if (result > 0) {
                                       print('RESULT is $result');
                                       setState(() {
