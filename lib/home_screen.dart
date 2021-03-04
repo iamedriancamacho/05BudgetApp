@@ -468,7 +468,7 @@ class _HomeScreen extends State<HomeScreen> {
                     return DropdownMenuItem<String>(
                       onTap: () {
                         setState(() {
-                          getAllCategories();
+                          //getAllCategories();
                           print("DROPDOWN $value");
                           //x = catDropDownList.indexOf(value);
                           test(value);
