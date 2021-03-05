@@ -979,31 +979,34 @@ class _HomeScreen extends State<HomeScreen> {
   Widget barChart() {
     return Padding(
       padding: const EdgeInsets.all(12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "MON", 0)
-              : chart(mon, "MON", listDays[0].monday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "TUE", 0)
-              : chart(tue, "TUE", listDays[0].tuesday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "WED", 0)
-              : chart(wed, "WED", listDays[0].wednesday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "THU", 0)
-              : chart(thu, "THU", listDays[0].thursday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "FRI", 0)
-              : chart(fri, "FRI", listDays[0].friday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "SAT", 0)
-              : chart(sat, "SAT", listDays[0].saturday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "SUN", 0)
-              : chart(sun, "SUN", listDays[0].sunday),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "MON", 0)
+                : chart(mon, "MON", listDays[0].monday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "TUE", 0)
+                : chart(tue, "TUE", listDays[0].tuesday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "WED", 0)
+                : chart(wed, "WED", listDays[0].wednesday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "THU", 0)
+                : chart(thu, "THU", listDays[0].thursday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "FRI", 0)
+                : chart(fri, "FRI", listDays[0].friday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "SAT", 0)
+                : chart(sat, "SAT", listDays[0].saturday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "SUN", 0)
+                : chart(sun, "SUN", listDays[0].sunday),
+          ],
+        ),
       ),
     );
   }
