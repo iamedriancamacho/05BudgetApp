@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:budget/models/category.dart';
 import 'package:budget/models/item.dart';
@@ -455,7 +454,7 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   addItem() {
-    print("TAP CATDROP $catDropDownList");
+    //print("TAP CATDROP $catDropDownList");
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
@@ -471,7 +470,7 @@ class _HomeScreen extends State<HomeScreen> {
                 width: MediaQuery.of(context).size.width / 1.4,
                 child: DropdownButton<String>(
                   isExpanded: true,
-                  //  value: dropdownValue,
+                  value: dropdownValue,
                   icon: Icon(Icons.keyboard_arrow_down),
                   iconSize: 30,
                   style: TextStyle(color: Theme.of(context).accentColor),
@@ -484,7 +483,6 @@ class _HomeScreen extends State<HomeScreen> {
                       dropdownValue = newValue;
                       Navigator.pop(context);
                       checkDrop = true;
-
                       addItem();
                     });
                   },
@@ -493,13 +491,14 @@ class _HomeScreen extends State<HomeScreen> {
                     return DropdownMenuItem<String>(
                       onTap: () {
                         setState(() {
+                          dropdownValue = value;
                           //getAllCategories();
                           print("DROPDOWN $value");
                           //x = catDropDownList.indexOf(value);
                           test(value);
                         });
                       },
-                      value: dropdownValue,
+                      value: value,
                       child: Text(value),
                     );
                   }).toList(),
@@ -574,7 +573,9 @@ class _HomeScreen extends State<HomeScreen> {
                         onPressed: () async {
                           print("ALL CAT ${categoryList.length}");
                           //_item.id = 20 + ++temp;
-                          if ((double.parse(itemAmount.text) +
+                          if (itemName.text.isEmpty ||
+                              itemName.text.length > 12 ||
+                              (double.parse(itemAmount.text) +
                                       globalList[addCatId].total) >
                                   globalList[addCatId].max ||
                               double.parse(itemAmount.text) <= 0 ||
@@ -664,7 +665,7 @@ class _HomeScreen extends State<HomeScreen> {
   Widget progressBar(double total, double max) {
     return LinearPercentIndicator(
       padding: EdgeInsets.symmetric(vertical: 20.0),
-      lineHeight: 15.0,
+      lineHeight: 10.0,
       percent: total / max,
       progressColor: Colors.orange,
       backgroundColor: Colors.grey,
@@ -775,7 +776,8 @@ class _HomeScreen extends State<HomeScreen> {
                       categories.forEach((category) {
                         temp++;
                       });
-                      if (double.parse(catLimit.text) <= 0) {
+                      if (double.parse(catLimit.text) <= 0 ||
+                          catName.text.length > 12) {
                         popUp(context);
                       } else {
                         //end of checking
@@ -862,45 +864,48 @@ class _HomeScreen extends State<HomeScreen> {
                 child: Text("Update"),
                 color: Colors.green,
                 onPressed: () async {
-                  _category.id = category[0]['id'];
-                  _category.name = catNameEdit.text;
-                  //_category.firstDate;
-                  //_category.endDate;
-                  _category.total = category[0]['total'];
-                  _category.max = double.parse(catLimitEdit.text);
-                  _category.firstDate = firstDay;
-                  _category.endDate = secondDay;
-                  var result = await _categoryService.updateCategory(_category);
-                  if (result > 0) {
-                    print('RESULT is $result');
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                    getAllCategories();
+                  if (catNameEdit.text.length > 12 ||
+                      catNameEdit.text.isEmpty) {
+                    popUp(context);
+                  } else {
+                    _category.id = category[0]['id'];
+                    _category.name = catNameEdit.text;
+                    //_category.firstDate;
+                    //_category.endDate;
+                    _category.total = category[0]['total'];
+                    _category.max = double.parse(catLimitEdit.text);
+                    _category.firstDate = firstDay;
+                    _category.endDate = secondDay;
+                    var result =
+                        await _categoryService.updateCategory(_category);
+                    if (result > 0) {
+                      print('RESULT is $result');
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      getAllCategories();
+                    }
                   }
                 },
               ),
             ],
             title: Text("Edit Category"),
-            content: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  TextField(
-                    controller: catNameEdit,
-                    decoration: InputDecoration(
-                      labelText: "Name",
-                    ),
+            content: Column(
+              children: <Widget>[
+                TextField(
+                  controller: catNameEdit,
+                  decoration: InputDecoration(
+                    labelText: "Name",
                   ),
-                  TextField(
-                    keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
-                    controller: catLimitEdit,
-                    enabled: true,
-                    decoration: InputDecoration(
-                      labelText: "Limit",
-                    ),
+                ),
+                TextField(
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  controller: catLimitEdit,
+                  enabled: false,
+                  decoration: InputDecoration(
+                    labelText: "Limit",
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         });
@@ -939,6 +944,9 @@ class _HomeScreen extends State<HomeScreen> {
           "₱ $price",
           maxLines: 1,
         ),
+        SizedBox(
+          height: 10.0,
+        ),
         Stack(
           children: <Widget>[
             Container(
@@ -946,16 +954,16 @@ class _HomeScreen extends State<HomeScreen> {
                 color: Colors.blueGrey[200],
                 borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
               ),
-              width: 15,
+              width: 10,
               height: 100,
             ),
             Container(
               //alignment: Alignment.bottomCenter,
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: Colors.green,
                 borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
               ),
-              width: 15,
+              width: 10,
               height: perc,
             ),
           ],
@@ -970,7 +978,7 @@ class _HomeScreen extends State<HomeScreen> {
 
   Widget barChart() {
     return Padding(
-      padding: const EdgeInsets.all(15.0),
+      padding: const EdgeInsets.all(12.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
@@ -1012,7 +1020,8 @@ class _HomeScreen extends State<HomeScreen> {
           centerTitle: true,
           title: Text(
             "Simple Budget",
-            style: TextStyle(color: Theme.of(context).accentColor),
+            style: TextStyle(
+                color: Theme.of(context).accentColor, fontFamily: 'Josefin'),
           ),
           leading: IconButton(
             icon: Icon(Icons.settings),
@@ -1029,14 +1038,12 @@ class _HomeScreen extends State<HomeScreen> {
             ),
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
-          child: Column(
-            children: <Widget>[
-              // Text('${itemList.length}'),
-              SizedBox(height: 20.0),
-              Center(
-                child: Container(
+        body: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                SizedBox(height: 20.0),
+                Container(
                   height: 280.0,
                   width: MediaQuery.of(context).size.width / 1.2,
                   decoration: BoxDecoration(boxShadow: [
@@ -1097,11 +1104,10 @@ class _HomeScreen extends State<HomeScreen> {
                                   });
                                 },
                               ),
-                              AutoSizeText(
+                              Text(
                                 '${DateFormat.yMMMd().format(firstDayWeek)} - ${DateFormat.yMMMd().format(firstDayWeek.add(new Duration(days: 6)))}',
-                                maxLines: 1,
                                 style: TextStyle(
-                                    fontFamily: "Jose",
+                                    fontFamily: "Josefin",
                                     fontSize: 15.0,
                                     color: Theme.of(context).accentColor),
                               ),
@@ -1149,52 +1155,54 @@ class _HomeScreen extends State<HomeScreen> {
                     ),
                   ),
                 ),
-              ),
-              categoryList.length != 0
-                  ? Expanded(
-                      child: ListView.builder(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
-                          itemCount: categoryList.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Dismissible(
-                              //secondaryBG ni sha before pero no worries
-                              background: Center(
-                                child: Container(
-                                  padding: EdgeInsets.only(right: 20.0),
-                                  color: Colors.orange,
-                                  child: Icon(
-                                    Icons.create,
-                                    size: 35.0,
-                                    color: Theme.of(context).accentColor,
+                categoryList.length != 0
+                    ? Container(
+                        padding: EdgeInsets.only(top: 20.0),
+                        height: MediaQuery.of(context).size.height / 2,
+                        width: MediaQuery.of(context).size.width / 1.18,
+                        child: ListView.builder(
+                            // padding: EdgeInsets.symmetric(vertical: 16.0),
+                            itemCount: categoryList.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Dismissible(
+                                //secondaryBG ni sha before pero no worries
+                                background: Center(
+                                  child: Container(
+                                    padding: EdgeInsets.only(right: 20.0),
+                                    color: Colors.orange,
+                                    child: Icon(
+                                      Icons.create,
+                                      size: 35.0,
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                    alignment: Alignment.centerRight,
                                   ),
-                                  alignment: Alignment.centerRight,
                                 ),
-                              ),
-                              key: UniqueKey(),
-                              onDismissed: (direction) async {
-                                if (direction.toString() ==
-                                    "DismissDirection.endToStart") {
-                                  _editCategory(
-                                      context,
-                                      categoryList[index].id,
-                                      categoryList[index].name,
-                                      categoryList[index].max);
-                                  // getCategories();
-                                  _edit(context);
-                                } else {
-                                  print("left;");
-                                }
-                                //cannot delete category
-                              },
-                              child: Center(
+                                key: UniqueKey(),
+                                onDismissed: (direction) async {
+                                  if (direction.toString() ==
+                                      "DismissDirection.endToStart") {
+                                    _editCategory(
+                                        context,
+                                        categoryList[index].id,
+                                        categoryList[index].name,
+                                        categoryList[index].max);
+                                    // getCategories();
+                                    _edit(context);
+                                  } else {
+                                    print("left;");
+                                  }
+                                  //cannot delete category
+                                },
                                 child: Container(
-                                  height: 120.0,
+                                  height: 100.0,
                                   width:
                                       MediaQuery.of(context).size.width / 1.2,
                                   decoration: BoxDecoration(boxShadow: [
                                     BoxShadow(
                                         color: Colors.white, blurRadius: 10.0)
                                   ]),
+                                  margin: EdgeInsets.symmetric(vertical: 10.0),
                                   child: Card(
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
@@ -1204,28 +1212,6 @@ class _HomeScreen extends State<HomeScreen> {
                                     child: ListTile(
                                       //minVerticalPadding: 20.0,
                                       onTap: () {
-                                        /*
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                CategoryScreen(
-                                                    firstDate:
-                                                        categoryList[index]
-                                                            .firstDate,
-                                                    endDate: categoryList[index]
-                                                        .endDate,
-                                                    updateCat:
-                                                        _updateCatFromItem,
-                                                    catMax:
-                                                        categoryList[index].max,
-                                                    catID:
-                                                        categoryList[index].id,
-                                                    name: categoryList[index]
-                                                        .name),
-                                          ),
-                                        );
-                                        */
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -1248,56 +1234,43 @@ class _HomeScreen extends State<HomeScreen> {
                                                           .name)),
                                         ).then((value) => setState(() {}));
                                       },
-                                      title: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          // Text('${categoryList[index].id}'),
-                                          AutoSizeText(
-                                            "${categoryList[index].name}",
-                                            maxLines: 1,
-                                            style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .accentColor,
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 25.0),
-                                          ),
-                                          AutoSizeText(
+                                      title: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            // Text('${categoryList[index].id}'),
+                                            Text(
+                                              "${categoryList[index].name}",
+                                              style: TextStyle(
+                                                  color: Theme.of(context)
+                                                      .accentColor,
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 20.0,
+                                                  fontFamily: 'Josefin'),
+                                            ),
+                                            Text(
                                               "₱ ${categoryList[index].total}/${categoryList[index].max}",
-                                              maxLines: 1),
-                                        ],
+                                              style: TextStyle(fontSize: 15.0),
+                                            ),
+                                          ],
+                                        ),
                                       ),
 
                                       subtitle: progressBar(
                                           categoryList[index].total,
                                           categoryList[index].max),
-
-                                      /*
-                                      subtitle: Text(
-                                          "${categoryList[index].firstDate}"),
-                                           */
-                                      leading: Container(
-                                        width: 50.0,
-                                        height: 100.0,
-                                        child: CircleAvatar(
-                                          backgroundColor: Colors.orange,
-                                          foregroundColor: Colors.black,
-                                          child: AutoSizeText(
-                                            "${categoryList[index].name[0]}",
-                                            maxLines: 1,
-                                            style: TextStyle(fontSize: 30.0),
-                                          ),
-                                        ),
-                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }),
-                    )
-                  : Text("No Categories Yet!")
-            ],
+                              );
+                            }),
+                      )
+                    : Text("No Categories Yet!")
+              ],
+            ),
           ),
         ),
       ),

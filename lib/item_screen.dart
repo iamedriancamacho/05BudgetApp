@@ -326,7 +326,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         itemName.text.isEmpty) {
                       popUp(context);
                     } else {
-                      if (double.parse(itemAmount.text) > widget.catMax ||
+                      if (itemName.text.isEmpty ||
+                          itemName.text.length > 12 ||
+                          double.parse(itemAmount.text) > widget.catMax ||
                           (double.parse(itemAmount.text) + tempMoney) >
                               widget.catMax ||
                           double.parse(itemAmount.text) <= 0) {
@@ -689,8 +691,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
         barrierDismissible: true,
         builder: (context) {
           return AlertDialog(
-            content: Text(
-                "Error. There seems to be a problem with your input. You can't add this item."),
+            content:
+                Text("Error. There seems to be a problem with your input."),
             actions: <Widget>[
               FlatButton(
                 color: Colors.red,
@@ -725,7 +727,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 color: Colors.green,
                 onPressed: () async {
                   //_item.id is AUTOINCREMENT
-                  if (double.parse(itemLimitEdit.text) > widget.catMax ||
+                  if (itemNameEdit.text.isEmpty ||
+                      itemNameEdit.text.length > 12 ||
+                      double.parse(itemLimitEdit.text) > widget.catMax ||
                       (double.parse(itemLimitEdit.text) + tempMoney) >
                           widget.catMax) {
                     popUp(context);
@@ -801,7 +805,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             onPressed: () {
               setState(() {
                 getAllDays();
-             
+
                 Navigator.pop(context);
                 //  Navigator.pushNamed(context, "Setting");
               });
@@ -817,154 +821,150 @@ class _CategoryScreenState extends State<CategoryScreen> {
             )
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
-          child: Center(
-            child: Column(
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.all(20.0),
-                  padding: EdgeInsets.all(20.0),
-                  height: 250.0,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Color(0xffF1F3F6),
-                    borderRadius: BorderRadius.circular(20.0),
+        body: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.0),
+                height: 250.0,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Color(0xffF1F3F6),
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+                //radial painter
+                child: CustomPaint(
+                  foregroundPainter: RadialPainter(
+                    bgColor: Colors.grey[400],
+                    lineColor: getColor(context, tempMoney <= 0 ? 0 : percent),
+                    percent: tempMoney <= 0 ? 0 : percent,
+                    width: 15.0,
                   ),
-                  //radial painter
-                  child: CustomPaint(
-                    foregroundPainter: RadialPainter(
-                      bgColor: Colors.grey[400],
-                      lineColor:
-                          getColor(context, tempMoney <= 0 ? 0 : percent),
-                      percent: tempMoney <= 0 ? 0 : percent,
-                      width: 15.0,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '\₱$tempMoney / \₱${widget.catMax}',
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  child: Center(
+                    child: Text(
+                      '\₱$tempMoney / \₱${widget.catMax}',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ),
-                itemList.length != 0
-                    ? Expanded(
-                        child: ListView.builder(
-                            padding: EdgeInsets.symmetric(vertical: 16.0),
-                            itemCount: itemList.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return Dismissible(
-                                background: Center(
-                                  child: Container(
-                                    padding: EdgeInsets.only(left: 20.0),
-                                    color: Colors.red,
-                                    child: Icon(
-                                      Icons.delete,
-                                      size: 35.0,
-                                      color: Theme.of(context).accentColor,
-                                    ),
-                                    alignment: Alignment.centerLeft,
+              ),
+              itemList.length != 0
+                  ? Container(
+                      height: MediaQuery.of(context).size.height / 2,
+                      width: MediaQuery.of(context).size.width / 1.18,
+                      child: ListView.builder(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          itemCount: itemList.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Dismissible(
+                              background: Center(
+                                child: Container(
+                                  padding: EdgeInsets.only(left: 20.0),
+                                  color: Colors.red,
+                                  child: Icon(
+                                    Icons.delete,
+                                    size: 35.0,
+                                    color: Theme.of(context).accentColor,
                                   ),
+                                  alignment: Alignment.centerLeft,
                                 ),
-                                secondaryBackground: Center(
-                                  child: Container(
-                                    padding: EdgeInsets.only(right: 20.0),
-                                    color: Colors.orange,
-                                    child: Icon(
-                                      Icons.create,
-                                      size: 35.0,
-                                      color: Theme.of(context).accentColor,
-                                    ),
-                                    alignment: Alignment.centerRight,
+                              ),
+                              secondaryBackground: Center(
+                                child: Container(
+                                  padding: EdgeInsets.only(right: 20.0),
+                                  color: Colors.orange,
+                                  child: Icon(
+                                    Icons.create,
+                                    size: 35.0,
+                                    color: Theme.of(context).accentColor,
                                   ),
+                                  alignment: Alignment.centerRight,
                                 ),
-                                key: UniqueKey(),
-                                onDismissed: (direction) async {
-                                  if (direction.toString() ==
-                                      "DismissDirection.endToStart") {
-                                    // if swiped to the right
-                                    daysUpdate = itemList[index].datetime;
-                                    print("UPDATE $daysUpdate");
-                                    _editList(
-                                        context,
-                                        itemList[index].id,
-                                        itemList[index].name,
-                                        itemList[index].amount);
+                              ),
+                              key: UniqueKey(),
+                              onDismissed: (direction) async {
+                                if (direction.toString() ==
+                                    "DismissDirection.endToStart") {
+                                  // if swiped to the right
+                                  daysUpdate = itemList[index].datetime;
+                                  print("UPDATE $daysUpdate");
+                                  _editList(
+                                      context,
+                                      itemList[index].id,
+                                      itemList[index].name,
+                                      itemList[index].amount);
 
-                                    _editL(context);
-                                  } else {
-                                    // if swiped to the left
-                                    // delete item
+                                  _editL(context);
+                                } else {
+                                  // if swiped to the left
+                                  // delete item
 
-                                    var result = await _itemService
-                                        .deleteCategory(itemList[index].id);
-                                    deductWeek(itemList[index].datetime,
-                                        itemList[index].amount);
+                                  var result = await _itemService
+                                      .deleteCategory(itemList[index].id);
+                                  deductWeek(itemList[index].datetime,
+                                      itemList[index].amount);
 
-                                    if (result > 0) {
-                                      print('RESULT is $result');
-                                      setState(() {
-                                        getAllItems();
+                                  if (result > 0) {
+                                    print('RESULT is $result');
+                                    setState(() {
+                                      getAllItems();
 
-                                        widget.updateCat(
-                                            tempMoney,
-                                            _cat.id,
-                                            _cat.name,
-                                            _cat.max,
-                                            _cat.firstDate,
-                                            _cat.endDate);
-                                      });
-                                    }
+                                      widget.updateCat(
+                                          tempMoney,
+                                          _cat.id,
+                                          _cat.name,
+                                          _cat.max,
+                                          _cat.firstDate,
+                                          _cat.endDate);
+                                    });
                                   }
-                                },
-                                //card
-                                child: Center(
-                                  child: Container(
-                                    height: 120.0,
-                                    width:
-                                        MediaQuery.of(context).size.width / 1.2,
-                                    decoration: BoxDecoration(boxShadow: [
-                                      BoxShadow(
-                                          color: Colors.white, blurRadius: 10.0)
-                                    ]),
-                                    child: Card(
-                                      elevation: 0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(20.0),
+                                }
+                              },
+                              //card
+                              child: Center(
+                                child: Container(
+                                  height: 120.0,
+                                  width:
+                                      MediaQuery.of(context).size.width / 1.2,
+                                  decoration: BoxDecoration(boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.white, blurRadius: 10.0)
+                                  ]),
+                                  child: Card(
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                    ),
+                                    color: Color(0xffF1F3F6),
+                                    child: ListTile(
+                                      //minVerticalPadding: 20.0,
+                                      title: Text(
+                                        "${itemList[index].name}",
+                                        style: TextStyle(
+                                            color:
+                                                Theme.of(context).accentColor,
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 25.0),
                                       ),
-                                      color: Color(0xffF1F3F6),
-                                      child: ListTile(
-                                        //minVerticalPadding: 20.0,
-                                        title: Text(
-                                          "${itemList[index].name}",
-                                          style: TextStyle(
-                                              color:
-                                                  Theme.of(context).accentColor,
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 25.0),
-                                        ),
-                                        // leading: Text('${itemList[index].id}'),
-                                        subtitle:
-                                            Text('${itemList[index].datetime}'),
-                                        trailing: Text(
-                                            " -₱ ${itemList[index].amount}",
-                                            style:
-                                                TextStyle(color: Colors.red)),
-                                      ),
+                                      // leading: Text('${itemList[index].id}'),
+                                      subtitle:
+                                          Text('${itemList[index].datetime}'),
+                                      trailing: Text(
+                                          " -₱ ${itemList[index].amount}",
+                                          style: TextStyle(color: Colors.red)),
                                     ),
                                   ),
                                 ),
-                              );
-                            }),
-                      )
-                    : Text("No Items Yet!")
-              ],
-            ),
+                              ),
+                            );
+                          }),
+                    )
+                  : Text("No Items Yet!")
+            ],
           ),
         ),
       ),
