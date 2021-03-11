@@ -38,4 +38,4 @@ int daysIndex;
 int lengthCat = 0;
 bool content = false;
 DateTime dis1, dis2;
-String daysUpdate;
+String daysUpdate, firstDay;

@@ -35,8 +35,10 @@ class _HomeScreen extends State<HomeScreen> {
   var _dayService =
       DaysService(); // for accessing functions inside the dayservice class
   DateTime newDatetime;
-  String firstDay,
-      secondDay; // utility variables for getting the first week and second week
+
+  String secondDay,
+      valForDrop =
+          "Choose: "; // utility variables for getting the first week and second week
   String date = "Add Date"; // inital string value for adding dates
   DateTime firstDayWeek = new DateTime.now()
       .subtract(new Duration(days: DateTime.now().weekday - 1));
@@ -181,11 +183,9 @@ class _HomeScreen extends State<HomeScreen> {
   //display categories
   //Async means that this function is asynchronous and you might need to wait a bit to get its result.
   getAllCategories() async {
-    populateCategories();
+    //populateCategories();
     categoryList = List<Category>();
     var categories = await _categoryService.readCategories();
-    int count = 0;
-    int tempe = 0;
     globalList.clear();
     catDropDownList.clear();
     categories.forEach((category) {
@@ -196,17 +196,14 @@ class _HomeScreen extends State<HomeScreen> {
       catModel.max = category['max'];
       catModel.firstDate = category['firstDate'];
       catModel.endDate = category['endDate'];
-      print("FIRST DAY $firstDay");
+
       globalList.add(catModel);
-      print('globalList $tempe: ${globalList[tempe].name}');
-      tempe++;
+
       if (firstDay == catModel.firstDate) {
         categoryList.add(catModel);
         catDropDownList.add(catModel.name);
       }
     });
-    print("SuLOD $count");
-    print('length of GL: ${globalList.length}');
   }
 
   initDays() async {
@@ -226,14 +223,10 @@ class _HomeScreen extends State<HomeScreen> {
       print(resultDays);
       var readDays1 = await _dayService.readDays();
       readDays1.forEach((days) {
-        print("INIT ID");
         daysIndex = days['id'];
-        print("DAYSINDEX FOR FIRST");
-        print("$daysIndex");
       });
 
       if (listDays.isEmpty) {
-        print("INIT LIST DAYS");
         setState(() {
           listDays.add(_days);
         });
@@ -271,7 +264,7 @@ class _HomeScreen extends State<HomeScreen> {
                 daysModel.friday +
                 daysModel.saturday +
                 daysModel.sunday;
-            print("TOTAL $total");
+
             if (total == 0 || categoryList.length == 0) {
               mon = 0;
               tue = 0;
@@ -281,7 +274,6 @@ class _HomeScreen extends State<HomeScreen> {
               sat = 0;
               sun = 0;
             } else {
-              print("asd");
               mon = (daysModel.monday / total) * 100;
               tue = (daysModel.tuesday / total) * 100;
               wed = (daysModel.wednesday / total) * 100;
@@ -313,9 +305,9 @@ class _HomeScreen extends State<HomeScreen> {
 // updating the values inside the weekly spending chart.
   updateWeek() async {
     var daysModel4 = Days();
-    print("FIRST DAY $firstDay");
+
     var daysWeek1 = await _dayService.readDays();
-    // print("CURRENT DAY ${widget.firstDate}");
+
     daysWeek1.forEach((days) {
       if (firstDay == days['firstWeek']) {
         if (getDayString(_item.datetime) == "Monday") {
@@ -329,7 +321,6 @@ class _HomeScreen extends State<HomeScreen> {
           daysModel4.friday = days['friday'];
           daysModel4.saturday = days['saturday'];
           daysModel4.sunday = days['sunday'];
-          print("DAYSMODEL MONDAY ${daysModel4.monday}");
         } else if (getDayString(_item.datetime) == "Tuesday") {
           var temp = days['tuesday'];
           daysModel4.tuesday = temp + double.parse(itemAmount.text);
@@ -341,7 +332,6 @@ class _HomeScreen extends State<HomeScreen> {
           daysModel4.friday = days['friday'];
           daysModel4.saturday = days['saturday'];
           daysModel4.sunday = days['sunday'];
-          print("DAYSMODEL tue ${daysModel4.tuesday}");
         } else if (getDayString(_item.datetime) == "Wednesday") {
           var temp = days['wednesday'];
           daysModel4.wednesday = temp + double.parse(itemAmount.text);
@@ -353,7 +343,6 @@ class _HomeScreen extends State<HomeScreen> {
           daysModel4.friday = days['friday'];
           daysModel4.saturday = days['saturday'];
           daysModel4.sunday = days['sunday'];
-          print("DAYSMODEL wed ${daysModel4.wednesday}");
         } else if (getDayString(_item.datetime) == "Thursday") {
           var temp = days['thursday'];
           daysModel4.thursday = temp + double.parse(itemAmount.text);
@@ -433,7 +422,7 @@ class _HomeScreen extends State<HomeScreen> {
   }
 
   //add item using category screen
-  test(String value) async {
+  getDropDownCatID(String value) async {
     int count = 0;
 
     var result3 = await _categoryService.readCategories();
@@ -442,7 +431,7 @@ class _HomeScreen extends State<HomeScreen> {
         catAddModel.id = cat['id'];
         catAddModel.name = cat['name'];
         catAddModel.firstDate = cat['firstDate'];
-        if (value == cat['name']) {
+        if (value == cat['name'] && firstDay == catAddModel.firstDate) {
           addCatId = catAddModel.id;
           print(
               "COUNT $count \nID = ${catAddModel.id}\nNAME = ${catAddModel.name}\nFIRSTDATE = ${catAddModel.firstDate}");
@@ -469,8 +458,9 @@ class _HomeScreen extends State<HomeScreen> {
               Container(
                 width: MediaQuery.of(context).size.width / 1.4,
                 child: DropdownButton<String>(
+                  hint: Text("$valForDrop"),
                   isExpanded: true,
-                  value: dropdownValue,
+                  //value: dropdownValue,
                   icon: Icon(Icons.keyboard_arrow_down),
                   iconSize: 30,
                   style: TextStyle(color: Theme.of(context).accentColor),
@@ -481,21 +471,20 @@ class _HomeScreen extends State<HomeScreen> {
                   onChanged: (String newValue) {
                     setState(() {
                       dropdownValue = newValue;
+                      valForDrop = dropdownValue;
                       Navigator.pop(context);
                       checkDrop = true;
                       addItem();
                     });
                   },
+                  // value: dropdownValue,
                   items: catDropDownList
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       onTap: () {
                         setState(() {
                           dropdownValue = value;
-                          //getAllCategories();
-                          print("DROPDOWN $value");
-                          //x = catDropDownList.indexOf(value);
-                          test(value);
+                          getDropDownCatID(value);
                         });
                       },
                       value: value,
@@ -586,7 +575,7 @@ class _HomeScreen extends State<HomeScreen> {
                             _item.amount = double.parse(itemAmount.text);
                             _item.datetime = date;
                             _item.catID = addCatId;
-
+                            _item.week = firstDay;
                             listDays.clear();
                             updateWeek();
                             getAllDays();
@@ -614,6 +603,7 @@ class _HomeScreen extends State<HomeScreen> {
                             });
                             var result2 = await _categoryService
                                 .updateCategory(_category);
+
                             getAllCategories();
                             print("RESULT FOR UPDATECAT = $result2");
 
@@ -780,34 +770,48 @@ class _HomeScreen extends State<HomeScreen> {
                           catName.text.length > 12) {
                         popUp(context);
                       } else {
+                        bool go = true;
                         //end of checking
+                        for (int i = 0; i < categoryList.length; i++) {
+                          if (categoryList[i].name.toLowerCase() ==
+                              catName.text.toLowerCase()) {
+                            go = false;
+                          }
+                        }
 
-                        _category.id = temp++;
-                        //_category.firstDate;
-                        //_category.endDate;
-                        _category.name = catName.text;
-                        _category.total = 0;
-                        _category.max = double.parse(catLimit.text);
-                        //print(_category.id);
-                        print("ADD CAT FIRST DAY $firstDay");
-                        _category.firstDate = firstDay;
-                        _category.endDate = secondDay;
-                        print("CATEGORY FIRST DAY ${_category.firstDate}");
-                        print("CATEGORY SECOND DAY ${_category.endDate}");
-                        var result =
-                            await _categoryService.saveCategory(_category);
-                        globalList.add(_category);
-                        getAllCategories();
-                        print(result);
-                        catName.text = '';
-                        catLimit.text = '';
+                        if (go) {
+                          _category.id = temp++;
+                          //_category.firstDate;
+                          //_category.endDate;
+                          _category.name = catName.text;
+                          _category.total = 0;
+                          _category.max = double.parse(catLimit.text);
+                          //print(_category.id);
+                          print("ADD CAT FIRST DAY $firstDay");
+                          _category.firstDate = firstDay;
+                          _category.endDate = secondDay;
+                          print("CATEGORY FIRST DAY ${_category.firstDate}");
+                          print("CATEGORY SECOND DAY ${_category.endDate}");
 
-                        saveDays();
-                        getAllDays();
-                        // add days
+                          var result =
+                              await _categoryService.saveCategory(_category);
+                          globalList.add(_category);
+                          getAllCategories();
+                          print(result);
+                          catName.text = '';
+                          catLimit.text = '';
 
-                        // end add days
-                        Navigator.pop(context);
+                          saveDays();
+                          // getAllDays();
+                          // add days
+
+                          // end add days
+                          Navigator.pop(context);
+                        } else {
+                          catName.text = '';
+                          catLimit.text = '';
+                          popUp(context);
+                        }
                       }
                     }
                   },
@@ -817,7 +821,6 @@ class _HomeScreen extends State<HomeScreen> {
                   ? FlatButton(
                       child: Text('I already have a category'),
                       onPressed: () {
-                        print("I already $firstDay");
                         Navigator.pop(context);
                         addItem();
                       })
@@ -880,9 +883,9 @@ class _HomeScreen extends State<HomeScreen> {
                         await _categoryService.updateCategory(_category);
                     if (result > 0) {
                       print('RESULT is $result');
-                      Navigator.pop(context);
-                      Navigator.pop(context);
                       getAllCategories();
+                      Navigator.pop(context);
+                      Navigator.pop(context);
                     }
                   }
                 },
@@ -900,7 +903,7 @@ class _HomeScreen extends State<HomeScreen> {
                 TextField(
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   controller: catLimitEdit,
-                  enabled: false,
+                  enabled: true,
                   decoration: InputDecoration(
                     labelText: "Limit",
                   ),
@@ -938,72 +941,96 @@ class _HomeScreen extends State<HomeScreen> {
   Widget chart(double perc, String day, double price) {
     // for the weekly chart
 
-    return Column(
-      children: <Widget>[
-        AutoSizeText(
-          "₱ $price",
-          maxLines: 1,
-        ),
-        SizedBox(
-          height: 10.0,
-        ),
-        Stack(
+    return Padding(
+      padding: const EdgeInsets.all(3.0),
+      child: Center(
+        child: Column(
           children: <Widget>[
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.blueGrey[200],
-                borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
-              ),
-              width: 10,
-              height: 100,
+            AutoSizeText(
+              "₱ $price",
+              maxLines: 1,
             ),
-            Container(
-              //alignment: Alignment.bottomCenter,
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
-              ),
-              width: 10,
-              height: perc,
+            SizedBox(
+              height: 10.0,
+            ),
+            Stack(
+              alignment: AlignmentDirectional.bottomEnd,
+              children: <Widget>[
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey[200],
+                    borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
+                  ),
+                  width: 10,
+                  height: 100,
+                ),
+                Container(
+                  //alignment: Alignment.bottomCenter,
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.all(Radius.elliptical(100, 50)),
+                  ),
+                  width: 10,
+                  height: perc,
+                ),
+              ],
+            ),
+            AutoSizeText(
+              "$day",
+              maxLines: 1,
             ),
           ],
         ),
-        AutoSizeText(
-          "$day",
-          maxLines: 1,
-        ),
-      ],
+      ),
     );
+
+    /*
+    return Wrap(
+      child: Expanded(
+        child: ListView.builder(
+  itemCount: 7,
+  itemBuilder: (context, index) {
+        return ListTile(
+          //title: Text('${items[index]}'),
+        );
+  },
+),
+      ),
+    );
+    */
   }
 
   Widget barChart() {
     return Padding(
       padding: const EdgeInsets.all(12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "MON", 0)
-              : chart(mon, "MON", listDays[0].monday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "TUE", 0)
-              : chart(tue, "TUE", listDays[0].tuesday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "WED", 0)
-              : chart(wed, "WED", listDays[0].wednesday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "THU", 0)
-              : chart(thu, "THU", listDays[0].thursday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "FRI", 0)
-              : chart(fri, "FRI", listDays[0].friday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "SAT", 0)
-              : chart(sat, "SAT", listDays[0].saturday),
-          listDays.length == 0 || categoryList.length == 0
-              ? chart(0, "SUN", 0)
-              : chart(sun, "SUN", listDays[0].sunday),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "MON", 0)
+                : chart(mon, "MON", listDays[0].monday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "TUE", 0)
+                : chart(tue, "TUE", listDays[0].tuesday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "WED", 0)
+                : chart(wed, "WED", listDays[0].wednesday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "THU", 0)
+                : chart(thu, "THU", listDays[0].thursday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "FRI", 0)
+                : chart(fri, "FRI", listDays[0].friday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "SAT", 0)
+                : chart(sat, "SAT", listDays[0].saturday),
+            listDays.length == 0 || categoryList.length == 0
+                ? chart(0, "SUN", 0)
+                : chart(sun, "SUN", listDays[0].sunday),
+          ],
+        ),
       ),
     );
   }
@@ -1024,14 +1051,17 @@ class _HomeScreen extends State<HomeScreen> {
                 color: Theme.of(context).accentColor, fontFamily: 'Josefin'),
           ),
           leading: IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {},
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              getAllDays();
+            },
           ),
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {
                 checkDrop = false;
+                valForDrop = "Choose: ";
                 print("appbar $firstDay");
                 addCategory();
               },
@@ -1165,6 +1195,7 @@ class _HomeScreen extends State<HomeScreen> {
                             itemCount: categoryList.length,
                             itemBuilder: (BuildContext context, int index) {
                               return Dismissible(
+                                direction: DismissDirection.endToStart,
                                 //secondaryBG ni sha before pero no worries
                                 background: Center(
                                   child: Container(
@@ -1268,7 +1299,11 @@ class _HomeScreen extends State<HomeScreen> {
                               );
                             }),
                       )
-                    : Text("No Categories Yet!")
+                    : Center(child: Text("No Categories Yet!")),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Try Pressing the Refresh Button."),
+                ),
               ],
             ),
           ),
